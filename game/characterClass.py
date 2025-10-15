@@ -39,6 +39,22 @@ class Character(pygame.sprite.Sprite):
         self.last_heavy_shot = 0
         
 
+        # flash hit
+        self.prev_health = self.health
+        self.flash_time = 100 # in ms
+        self.flash_start = 0
+        self.original_image = self.image.copy()
+
+        # ___ load flash images  ___
+        self.flash_images = []
+        for i in range(2): # flash 2 images in folder
+            img = pygame.image.load(f'img/{self.character_type}/damage/{i}.png').convert_alpha()
+            img = pygame.transform.scale(img, (self.rect.width, self.rect.height))
+            self.flash_images.append(img)
+            
+        self.flash_index = 0
+
+
 
 
 
@@ -50,7 +66,8 @@ class Character(pygame.sprite.Sprite):
         
     # update character class objects
     def update(self, player):
-        self.check_alive(player)    
+        self.check_alive(player)
+        self.damage_flash()  
         
        
 
@@ -254,3 +271,23 @@ class Character(pygame.sprite.Sprite):
                 self.velocity = 0
                 self.alive = False
                 self.kill()
+
+
+    # flash damage when hit
+    def damage_flash(self):
+        # check if currently flashing
+        elapsed = pygame.time.get_ticks() - self.flash_start
+        flashing = elapsed < self.flash_time * len(self.flash_images)
+        
+        # only restart flash if health decreased and not already flashing
+        if self.health < self.prev_health and not flashing:
+            self.flash_start = pygame.time.get_ticks()
+            
+        self.prev_health = self.health # check for new health as this one to be compared for damage
+        
+        # Hanlde flashing animation
+        if flashing:
+            frame = (elapsed // self.flash_time) % len(self.flash_images)
+            self.image = self.flash_images[frame]
+        else:
+            self.image = self.original_image
