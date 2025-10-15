@@ -48,3 +48,4 @@ moving_right = False
 moving_up = False
 moving_down = False
 shooting = False
+heavy_shooting = False

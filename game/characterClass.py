@@ -31,9 +31,15 @@ class Character(pygame.sprite.Sprite):
 
         # laser shooting attributes
         self.lasers = pygame.sprite.Group()
-        self.laser_cooldown = 100           # milliseconds
+        self.laser_cooldown = 100 # milliseconds
         self.laser_shot_time = 0
+
+        # heavy lasers
+        self.heavy_cooldown = 300
+        self.last_heavy_shot = 0
         
+
+
 
 
 
@@ -125,7 +131,7 @@ class Character(pygame.sprite.Sprite):
                 
                 
 
-
+    ##### basic laser #####
 
     # laser shoot check method for player and enemy
     def shoot_laser(self, target_player=None, target_enemy_group=None):
@@ -183,6 +189,60 @@ class Character(pygame.sprite.Sprite):
             laser.update()
             laser.draw()
 
+
+
+    # ____ Heavy laser ____
+
+    def shoot_heavy(self, target_player=None, target_enemy_group=None):
+        from projectiles import HeavyLaser
+        
+        """Fire heavy lasers """ 
+        now = pygame.time.get_ticks()
+        if now - getattr(self, "last_heavy_shot", 0) < self.heavy_cooldown:
+            return
+        
+        # create heavy laser
+        if self.character_type.startswith("enemy"):
+            # force enemy to get target or skip logic
+            if target_player is None:
+                return
+            heavy = HeavyLaser(self, target_player, target_enemy_group)  
+        else: # player
+            if target_enemy_group is None: # if no target for player skip
+                return 
+            heavy = HeavyLaser(self, target_player, target_enemy_group)  
+            
+        self.lasers.add(heavy)
+        self.last_heavy_shot = now
+    
+
+    # ai heavy shot
+    def ai_shoot_heavy(self, player, enemy_group):
+        
+        if self.character_type != "enemy1":
+            return
+        
+        
+        detection_rect = pygame.Rect(
+            self.rect.centerx - 25, # offset x by 25 px to left so we center based on our picture 
+            self.rect.bottom,      # just below enemy / they are looking down from top screen
+            40,                    # width of rect
+            720                    # height
+            
+        )  
+        if not detection_rect.colliderect(player.rect): # if we do not collide with player we skip
+            return
+        
+        now = pygame.time.get_ticks()
+        cooldown = 1000 # 1 second
+        
+        if now - getattr(self, "last_heavy_shot", 0) >= cooldown:
+            # call shared heavy shooting method
+            self.shoot_heavy(
+                target_player=player,
+                target_enemy_group=enemy_group,
+                )    
+            self.last_heavy_shot = now
 
 
     # check if player and ai is dead or alive

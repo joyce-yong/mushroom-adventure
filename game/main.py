@@ -4,7 +4,7 @@ import config
 import characterClass
 
 
-from sprite_groups import enemy_group, player_lasers, enemy_lasers
+from sprite_groups import enemy_group, player_lasers, heavyLaser_group
 
 
 
@@ -65,11 +65,16 @@ while playing:
     player.draw()
     player.update(player)
         
-   
+
+
     # update and draw enemies
     for enemy in enemy_group:
         enemy.update_enemy(config.SCREEN_HEIGHT)
         enemy.draw()
+        enemy.update_lasers()
+        enemy.update(player)
+        enemy.ai_shoot(player, enemy_group) # ai_shooting plain laser
+        enemy.ai_shoot_heavy(player, enemy_group)
 
 
 
@@ -84,11 +89,18 @@ while playing:
         )
     player.update_lasers()
 
-    # ai lasers
-    for enemy in enemy_group:
-        enemy.update_lasers()
-        enemy.update(player)
-        enemy.ai_shoot(player, enemy_group) # ai_shooting
+
+
+
+    # heavy laser
+    heavyLaser_group.draw(config.game_window)
+    heavyLaser_group.update()
+    
+    if getattr(config, "heavy_shooting", False):
+        player.shoot_heavy(
+            target_player=player,
+            target_enemy_group=enemy_group
+        )
 
 
 
@@ -107,6 +119,7 @@ while playing:
             if event.key == pygame.K_UP:    config.moving_up = True
             if event.key == pygame.K_DOWN:  config.moving_down = True
             if event.key == pygame.K_a: config.shooting = True
+            if event.key == pygame.K_d: config.heavy_shooting = True
             
             if event.key == pygame.K_ESCAPE: playing = False
             
@@ -117,6 +130,7 @@ while playing:
             if event.key == pygame.K_UP:    config.moving_up = False
             if event.key == pygame.K_DOWN:  config.moving_down = False
             if event.key == pygame.K_a: config.shooting = False
+            if event.key == pygame.K_d: config.heavy_shooting = False
             
 
 

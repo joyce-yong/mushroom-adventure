@@ -57,3 +57,34 @@ class Laser(pygame.sprite.Sprite):
     # draw laser
     def draw(self):
         config.game_window.blit(self.image, self.rect)
+
+
+
+
+class HeavyLaser(Laser):
+    def __init__(self, shooter, player, enemy_group, damage=50, velocity=8, image_path="img/heavyLaser/heavylaser.png", size=(18,45)):
+        
+        # initialize base laser class 
+        super().__init__(shooter, player, enemy_group, damage=damage, velocity=velocity)
+        
+        # OVERRIDE DAMAGE AND SPEED FOR ENEMIES
+        if shooter.character_type.startswith("enemy"):
+            self.damage = 10 # enemy does 10% health damage or shield damage
+            self.velocity = 4
+        else:
+            self.damage = damage # keep default damage for player
+            self.velocity = 14
+            
+        # load images and scale heavy laser
+        img = pygame.image.load(image_path).convert_alpha()
+        img = pygame.transform.scale(img, size)
+        
+        if shooter.character_type.startswith("enemy"):
+            img = pygame.transform.flip(img, False, True) # enemy looks down so we flip laser
+            self.rect = img.get_rect(midtop=shooter.rect.midbottom)
+            self.direction = 1 # facing towards screen bottom
+        else:
+            self.rect = img.get_rect(midbottom=shooter.rect.midtop)
+            self.direction = -1 # facing top screen
+            
+        self.image = img
