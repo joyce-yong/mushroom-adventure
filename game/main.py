@@ -4,7 +4,7 @@ import config
 import characterClass
 
 
-from sprite_groups import enemy_group, player_lasers, heavyLaser_group
+from sprite_groups import enemy_group, player_lasers, heavyLaser_group, rockets_group
 
 
 
@@ -64,7 +64,16 @@ while playing:
     
     player.draw()
     player.update(player)
+
+
+    for rocket in rockets_group:
+        rocket.update()
+        rocket.draw()
+    
+    if config.rocket:
+        player.shoot_rocket(enemy_group,rockets_group)
         
+
 
 
     # update and draw enemies
@@ -75,6 +84,7 @@ while playing:
         enemy.update(player)
         enemy.ai_shoot(player, enemy_group) # ai_shooting plain laser
         enemy.ai_shoot_heavy(player, enemy_group)
+        enemy.ai_shoot_rocket(player, rockets_group)
 
 
 
@@ -104,6 +114,7 @@ while playing:
 
 
 
+
     # movement 
     player.movement(config.moving_left, config.moving_right, config.moving_up, config.moving_down)
     
@@ -120,6 +131,7 @@ while playing:
             if event.key == pygame.K_DOWN:  config.moving_down = True
             if event.key == pygame.K_a: config.shooting = True
             if event.key == pygame.K_d: config.heavy_shooting = True
+            if event.key == pygame.K_s: config.rocket = True
             
             if event.key == pygame.K_ESCAPE: playing = False
             
@@ -131,12 +143,13 @@ while playing:
             if event.key == pygame.K_DOWN:  config.moving_down = False
             if event.key == pygame.K_a: config.shooting = False
             if event.key == pygame.K_d: config.heavy_shooting = False
+            if event.key == pygame.K_s: config.rocket = False
             
 
 
 
         # _______ Spawn enemy waves ________
-        if event.type == SPAWN_EVENT:# 12s
+        if event.type == SPAWN_EVENT: # 12s
             pending_spawns = wave_count # number to spawn this wave
             wave_count += 1             # next wave is 1 larger
             spawn_enemy()

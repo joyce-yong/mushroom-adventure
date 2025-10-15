@@ -1,7 +1,7 @@
 import pygame
 import config
 
-from projectiles import Laser
+from projectiles import Laser, Rocket
 
 # create base character class
 class Character(pygame.sprite.Sprite):
@@ -53,6 +53,10 @@ class Character(pygame.sprite.Sprite):
             self.flash_images.append(img)
             
         self.flash_index = 0
+
+        # rockets
+        self.last_rocket_time = 0
+        self.rocket_cooldown = 1000
 
 
 
@@ -260,6 +264,81 @@ class Character(pygame.sprite.Sprite):
                 target_enemy_group=enemy_group,
                 )    
             self.last_heavy_shot = now
+
+
+
+
+    # rocket check
+    def shoot_rocket(self, target_group, rocket_group):
+        current_time = pygame.time.get_ticks()
+        
+        # Enemy shoots at 1/3 the speed
+        cooldown = self.rocket_cooldown
+        if self.character_type == "enemy2":
+            cooldown *= 3
+            
+        if current_time - self.last_rocket_time >= cooldown:
+            rocket = Rocket(self, target_group)
+            rocket_group.add(rocket)
+            self.last_rocket_time = current_time
+
+
+
+
+    # ai shoots
+    def ai_shoot_rocket(self, player, rocket_group):
+        """Only enemy 2 can shoot rockets"""
+        if self.character_type not in "enemy2":
+            return
+        
+        # detection area rectangle
+        detection_rect = pygame.Rect(
+            self.rect.centerx - 25, # check image and center in x  -25px (left)
+            self.rect.bottom,
+            50,
+            760
+        )            
+
+        # fire only if player is in detection range 
+        if detection_rect.colliderect(player.rect):
+            current_time = pygame.time.get_ticks()
+            
+            # diffrent cooldown types
+            if self.character_type == "enemy2":
+                rocket_cooldown = 3000 # 3 sec
+            else: # other enemies
+                rocket_cooldown = 2000 # 2 sec 1 faster  
+                
+            if current_time - getattr(self, "last_rocket_time", 0) >= rocket_cooldown:
+                self.shoot_rocket(
+                    pygame.sprite.Group([player]),
+                    rocket_group
+                )
+                self.last_rocket_time = current_time
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     # check if player and ai is dead or alive
