@@ -68,7 +68,8 @@ while playing:
 
 
 
-
+    # movement 
+    player.movement(config.moving_left, config.moving_right, config.moving_up, config.moving_down)
     
     # events
     for event in pygame.event.get():
@@ -77,12 +78,20 @@ while playing:
             
             
         if event.type == pygame.KEYDOWN:
-        
+            if event.key == pygame.K_LEFT: config.moving_left = True 
+            if event.key == pygame.K_RIGHT: config.moving_right = True
+            if event.key == pygame.K_UP:    config.moving_up = True
+            if event.key == pygame.K_DOWN:  config.moving_down = True
             
             if event.key == pygame.K_ESCAPE: playing = False
             
-
-
+        
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_LEFT:  config.moving_left = False
+            if event.key == pygame.K_RIGHT: config.moving_right = False
+            if event.key == pygame.K_UP:    config.moving_up = False
+            if event.key == pygame.K_DOWN:  config.moving_down = False
+            
 
 
 

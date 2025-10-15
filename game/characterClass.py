@@ -36,9 +36,36 @@ class Character(pygame.sprite.Sprite):
         
        
         
+    # movement method for player or ai if you choose
+    def movement(self, moving_left, moving_right, moving_up, moving_down):
+        dx = 0
+        dy = 0
         
+        if moving_left:
+            dx = -1
+            self.direction = -1
+        if moving_right:
+            dx = 1
+            self.direction = 1
+        if moving_up:
+            dy = -1
+        if moving_down:
+            dy = 1    
+            
         
-    
+        # normalize diagonal speed
+        if dx != 0 and dy != 0:
+            dx *= 0.7071
+            dy *= 0.7071
+            
+        
+        # apply movement on rect
+        self.rect.x += dx * self.velocity
+        self.rect.y += dy * self.velocity
+        
+
+
+
     #AI enemies 
     def update_enemy(self, window_height):
         if self.phase == "enter":
