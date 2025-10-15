@@ -2,7 +2,12 @@ import pygame
 import random
 import config
 import characterClass
-from sprite_groups import enemy_group
+
+
+from sprite_groups import enemy_group, player_lasers, enemy_lasers
+
+
+
 
 
 
@@ -58,6 +63,7 @@ while playing:
     
     
     player.draw()
+    player.update(player)
         
    
     # update and draw enemies
@@ -65,6 +71,24 @@ while playing:
         enemy.update_enemy(config.SCREEN_HEIGHT)
         enemy.draw()
 
+
+
+    # lasers
+    for laser in player_lasers:
+        laser.update()
+        laser.draw()
+    # if player shoots
+    if config.shooting:
+        player.shoot_laser(
+            target_enemy_group=enemy_group
+        )
+    player.update_lasers()
+
+    # ai lasers
+    for enemy in enemy_group:
+        enemy.update_lasers()
+        enemy.update(player)
+        enemy.ai_shoot(player, enemy_group) # ai_shooting
 
 
 
@@ -82,6 +106,7 @@ while playing:
             if event.key == pygame.K_RIGHT: config.moving_right = True
             if event.key == pygame.K_UP:    config.moving_up = True
             if event.key == pygame.K_DOWN:  config.moving_down = True
+            if event.key == pygame.K_a: config.shooting = True
             
             if event.key == pygame.K_ESCAPE: playing = False
             
@@ -91,6 +116,7 @@ while playing:
             if event.key == pygame.K_RIGHT: config.moving_right = False
             if event.key == pygame.K_UP:    config.moving_up = False
             if event.key == pygame.K_DOWN:  config.moving_down = False
+            if event.key == pygame.K_a: config.shooting = False
             
 
 
