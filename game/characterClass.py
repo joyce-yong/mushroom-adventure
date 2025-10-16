@@ -132,7 +132,7 @@ class Character(pygame.sprite.Sprite):
 
 
 
-    #AI enemies 
+    # AI enemies 
     def update_enemy(self, window_height):
         if self.phase == "enter":
             if self.rect.y < self.target_y:
@@ -169,6 +169,8 @@ class Character(pygame.sprite.Sprite):
                 
             self.lasers.add(laser)
             self.laser_shot_time = current_time
+
+            config.laser_fx.play()
 
 
 
@@ -236,6 +238,9 @@ class Character(pygame.sprite.Sprite):
             
         self.lasers.add(heavy)
         self.last_heavy_shot = now
+
+        config.channel_3.set_volume(0.3)
+        config.channel_3.play(config.heavyLaser_fx)
     
 
     # ai heavy shot
@@ -256,7 +261,7 @@ class Character(pygame.sprite.Sprite):
             return
         
         now = pygame.time.get_ticks()
-        cooldown = 1000 # 1 second
+        cooldown = 700
         
         if now - getattr(self, "last_heavy_shot", 0) >= cooldown:
             # call shared heavy shooting method
@@ -283,6 +288,8 @@ class Character(pygame.sprite.Sprite):
             rocket = Rocket(self, target_group, asteroid_group)
             rocket_group.add(rocket)
             self.last_rocket_time = current_time
+
+            config.channel_4.play(config.rockets_fx)
 
 
 
@@ -326,24 +333,6 @@ class Character(pygame.sprite.Sprite):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     # check if player and ai is dead or alive
     def check_alive(self, player):
         
@@ -353,6 +342,11 @@ class Character(pygame.sprite.Sprite):
                 self.velocity = 0
                 self.alive = False
                 self.kill()
+
+                config.score += 50
+                player.health += 20
+                if player.health >= player.max_health:
+                    player.health = 100 # never go over 100 health
 
 
     # flash damage when hit

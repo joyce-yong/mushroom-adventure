@@ -1,5 +1,6 @@
 import pygame
 import random
+import config
 
 class Asteroid(pygame.sprite.Sprite):
     def __init__(self, x, y, scale, health=20):
@@ -54,6 +55,9 @@ class Asteroid(pygame.sprite.Sprite):
     
     # create break apart method
     def break_apart(self, asteroid_group, rocket_hit=False):
+
+        config.channel_2.set_volume(0.8)
+        config.channel_2.play(config.asteroid_fx)
         if rocket_hit: # rocket breaks it into smaller pieces
             new_scale = self.scale * 0.25
             num_pieces = 4

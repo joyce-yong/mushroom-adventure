@@ -1,12 +1,14 @@
 import pygame
+from pygame import mixer
+import os
 
 
 pygame.init()
 pygame.display.set_caption('Mushroom Adventure')
 
 # Width and Height of screen
-INTERNAL_WIDTH = 1400
-INTERNAL_HEIGHT = 700
+INTERNAL_WIDTH = 1600
+INTERNAL_HEIGHT = 800
 internal_surface = pygame.Surface((INTERNAL_WIDTH, INTERNAL_HEIGHT))
 
 # Fullscreen mode
@@ -25,6 +27,8 @@ FPS = 60 # 60 frames
 
 # const colours
 BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+CAYAN = (0, 255, 255)
 
 
 
@@ -50,3 +54,26 @@ moving_down = False
 shooting = False
 heavy_shooting = False
 rocket = False
+
+
+
+# Audio
+
+score = 0
+
+# audio
+laser_fx = pygame.mixer.Sound(os.path.join('audio', 'burst_fire.mp3'))
+heavyLaser_fx = pygame.mixer.Sound(os.path.join('audio', 'laserLarge.ogg'))
+rockets_fx = pygame.mixer.Sound(os.path.join('audio', 'tir.mp3'))
+explode_fx = pygame.mixer.Sound(os.path.join('audio', 'snd_bomb.ogg'))
+asteroid_fx = pygame.mixer.Sound(os.path.join('audio', 'breaPower.wav'))
+
+laser_fx.set_volume(0.2)
+
+channel_1 = pygame.mixer.Channel(0)  # intros
+channel_2 = pygame.mixer.Channel(1)  # EMPTY()
+channel_3 = pygame.mixer.Channel(2)  # laser
+channel_4 = pygame.mixer.Channel(3)  # Heavylaser
+channel_5 = pygame.mixer.Channel(4)  # rocket
+channel_6 = pygame.mixer.Channel(5)  # explosion
+channel_2.set_volume(0.3)

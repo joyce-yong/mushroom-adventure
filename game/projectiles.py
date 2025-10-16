@@ -204,6 +204,8 @@ class Rocket(pygame.sprite.Sprite):
                 self.frame_index = 0 # start from first image
                 self.image = self.explosion_images[self.frame_index]
                 self.rect = self.image.get_rect(center=self.rect.center)
+                config.channel_5.set_volume(0.8)
+                config.channel_5.play(config.explode_fx)
                 
             
             # _ Kill rocket off screen _

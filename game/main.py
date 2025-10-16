@@ -1,4 +1,6 @@
 import pygame
+import os
+from pygame import mixer
 import random
 import config
 import characterClass
@@ -9,6 +11,26 @@ from asteroid import Asteroid
 
 
 
+# create player object
+player = characterClass.Character('player', 800, 700, 2, 10)
+
+
+# music for game
+def play_music(song_path):
+    try:
+        pygame.mixer.music.load(song_path)
+        pygame.mixer.music.set_volume(0.6) # main song volume
+        pygame.mixer.music.play() # play the song without looping
+        print(f"Playing music: {song_path}") # for song print and debug
+    except Exception as e:
+        print(f"Error loading music: {e}")
+
+current_song = 'song1' # Track the current song
+is_paused = False # Track if the game music is paused or not
+song1_path = os.path.join('audio', 'Cyberpunk Background Music.mp3')
+
+# Play initial song on start
+play_music(song1_path)
 
 
 
@@ -26,8 +48,7 @@ def draw_scrolling_bg(surface, image, state, speed=4):
     surface.blit(image, (0, state['y']))
 
 
-#create player object
-player = characterClass.Character('player', 800, 700, 2, 10)
+
 
 SPAWN_EVENT = pygame.USEREVENT + 1
 SPAWN_SINGLE_EVENT = pygame.USEREVENT + 2 # for staggered spawns
@@ -57,8 +78,10 @@ playing = True
 while playing:
     config.frameRate.tick(config.FPS) # get time and frame rate (loop rate)
     config.game_window.fill(config.BLACK)
-    
-    
+
+    if player.health <= 0:
+        playing = False
+        print("You died, health is: ",player.health, ", with a score of:", config.score)
     
     draw_scrolling_bg(config.game_window, config.scale_bg, config.scroll_state, speed=3)
     
@@ -127,7 +150,18 @@ while playing:
 
     # movement 
     player.movement(config.moving_left, config.moving_right, config.moving_up, config.moving_down)
+
+
+
+
+
+    # music switching logic
+    if not is_paused:
+        if not pygame.mixer.music.get_busy(): # check if song is still playing
+            current_song = 'song1'
+            play_music(song1_path) 
     
+
     # events
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
