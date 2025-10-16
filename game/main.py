@@ -4,7 +4,8 @@ import config
 import characterClass
 
 
-from sprite_groups import enemy_group, player_lasers, heavyLaser_group, rockets_group
+from sprite_groups import enemy_group, player_lasers, heavyLaser_group, rockets_group, asteroid_group
+from asteroid import Asteroid
 
 
 
@@ -71,9 +72,16 @@ while playing:
         rocket.draw()
     
     if config.rocket:
-        player.shoot_rocket(enemy_group,rockets_group)
+        player.shoot_rocket(enemy_group, rockets_group, asteroid_group)
+    
+    if random.random() < 0.005:
+        x = random.randint(50, config.SCREEN_WIDTH - 50)
+        asteroid = Asteroid(x, -50, scale=1.0, health=20)
+        asteroid_group.add(asteroid)
         
-
+    for asteroid in asteroid_group:
+        asteroid.update(asteroid_group, player)
+        asteroid.draw(config.game_window)
 
 
     # update and draw enemies
@@ -82,9 +90,9 @@ while playing:
         enemy.draw()
         enemy.update_lasers()
         enemy.update(player)
-        enemy.ai_shoot(player, enemy_group) # ai_shooting plain laser
-        enemy.ai_shoot_heavy(player, enemy_group)
-        enemy.ai_shoot_rocket(player, rockets_group)
+        enemy.ai_shoot(player, enemy_group, asteroid_group) # ai_shooting plain laser
+        enemy.ai_shoot_heavy(player, enemy_group, asteroid_group)
+        enemy.ai_shoot_rocket(player, rockets_group, asteroid_group)
 
 
 
@@ -95,7 +103,8 @@ while playing:
     # if player shoots
     if config.shooting:
         player.shoot_laser(
-            target_enemy_group=enemy_group
+            target_enemy_group=enemy_group,
+            asteroid_group=asteroid_group
         )
     player.update_lasers()
 
@@ -109,7 +118,8 @@ while playing:
     if getattr(config, "heavy_shooting", False):
         player.shoot_heavy(
             target_player=player,
-            target_enemy_group=enemy_group
+            target_enemy_group=enemy_group,
+            asteroid_group=asteroid_group
         )
 
 

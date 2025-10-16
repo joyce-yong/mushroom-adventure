@@ -5,14 +5,14 @@ import config
 
 
 class Laser(pygame.sprite.Sprite):
-    def __init__(self, shooter, player, enemy_group, damage=10, velocity=12):
+    def __init__(self, shooter, player, enemy_group, asteroid_group, damage=10, velocity=12):
         super().__init__()
         self.shooter = shooter
         self.player = player
         self.enemy_group = enemy_group
         self.damage = damage
         self.velocity = velocity
-        
+        self.asteroid_group = asteroid_group
         
         # load the image
         self.image = pygame.image.load("img/laser/laser.png").convert_alpha()
@@ -55,7 +55,14 @@ class Laser(pygame.sprite.Sprite):
                     self.kill()
                     return
                 
-                
+            # asteroid hit
+            for asteroid in self.asteroid_group:
+                if self.rect.colliderect(asteroid.rect):
+                    asteroid.health -= self.damage
+                    self.kill()
+                    return  
+
+
     # draw laser
     def draw(self):
         config.game_window.blit(self.image, self.rect)
@@ -64,10 +71,10 @@ class Laser(pygame.sprite.Sprite):
 
 
 class HeavyLaser(Laser):
-    def __init__(self, shooter, player, enemy_group, damage=50, velocity=8, image_path="img/heavyLaser/heavylaser.png", size=(18,45)):
+    def __init__(self, shooter, player, enemy_group, asteroid_group, damage=50, velocity=8, image_path="img/heavyLaser/heavylaser.png", size=(18,45)):
         
         # initialize base laser class 
-        super().__init__(shooter, player, enemy_group, damage=damage, velocity=velocity)
+        super().__init__(shooter, player, enemy_group, asteroid_group, damage=damage, velocity=velocity)
         
         # OVERRIDE DAMAGE AND SPEED FOR ENEMIES
         if shooter.character_type.startswith("enemy"):
@@ -97,7 +104,7 @@ class HeavyLaser(Laser):
 # rocket class
 
 class Rocket(pygame.sprite.Sprite):
-    def __init__(self, shooter, target_group):
+    def __init__(self, shooter, target_group, asteroid_group):
         super().__init__()
         self.shooter = shooter
         self.rocket_images = []
@@ -110,6 +117,7 @@ class Rocket(pygame.sprite.Sprite):
         
         # References
         self.target_group = target_group
+        self.asteroid_group = asteroid_group
         
         # __load rocket images __
         for filename in sorted(os.listdir("img/rocket")):
@@ -180,8 +188,16 @@ class Rocket(pygame.sprite.Sprite):
                         else: # player
                             target.health -= 150 # from enemy health
                     hit_something = True
+            
+
+            for asteroid in list(self.asteroid_group):
+                if hasattr(asteroid, "rect") and detection_area.colliderect(asteroid.rect):
+                    asteroid.health -= 100
+                    asteroid.break_apart(self.asteroid_group, rocket_hit=True)
                     
-                    
+
+
+
             # Trigger explosion
             if hit_something:
                 self.exploding = True # set explosion state

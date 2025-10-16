@@ -155,17 +155,17 @@ class Character(pygame.sprite.Sprite):
     ##### basic laser #####
 
     # laser shoot check method for player and enemy
-    def shoot_laser(self, target_player=None, target_enemy_group=None):
+    def shoot_laser(self, target_player=None, target_enemy_group=None, asteroid_group=None):
         current_time = pygame.time.get_ticks() # get time
         if current_time - self.laser_shot_time >= self.laser_cooldown:
             if self.character_type.startswith("enemy"):
                 if target_player is None:
                     return
-                laser = Laser(self, target_player, target_enemy_group)
+                laser = Laser(self, target_player, target_enemy_group, asteroid_group)
             else:
                 if target_enemy_group is None:
                     return
-                laser = Laser(self, target_player, target_enemy_group)
+                laser = Laser(self, target_player, target_enemy_group, asteroid_group)
                 
             self.lasers.add(laser)
             self.laser_shot_time = current_time
@@ -173,7 +173,7 @@ class Character(pygame.sprite.Sprite):
 
 
     # ai check for collision of vision
-    def ai_shoot(self, player, enemy_group):
+    def ai_shoot(self, player, enemy_group, asteroid_group):
         """Only enemy 3 can shoot this laser for now"""
         
         if self.character_type != "enemy3":
@@ -196,7 +196,8 @@ class Character(pygame.sprite.Sprite):
             # Shoot
             self.shoot_laser(
                 target_player=player,
-                target_enemy_group=enemy_group
+                target_enemy_group=enemy_group,
+                asteroid_group=asteroid_group
             )
             
             # Restore original cooldown
@@ -214,7 +215,7 @@ class Character(pygame.sprite.Sprite):
 
     # ____ Heavy laser ____
 
-    def shoot_heavy(self, target_player=None, target_enemy_group=None):
+    def shoot_heavy(self, target_player=None, target_enemy_group=None, asteroid_group=None):
         from projectiles import HeavyLaser
         
         """Fire heavy lasers """ 
@@ -227,18 +228,18 @@ class Character(pygame.sprite.Sprite):
             # force enemy to get target or skip logic
             if target_player is None:
                 return
-            heavy = HeavyLaser(self, target_player, target_enemy_group)  
+            heavy = HeavyLaser(self, target_player, target_enemy_group, asteroid_group)  
         else: # player
             if target_enemy_group is None: # if no target for player skip
                 return 
-            heavy = HeavyLaser(self, target_player, target_enemy_group)  
+            heavy = HeavyLaser(self, target_player, target_enemy_group, asteroid_group)  
             
         self.lasers.add(heavy)
         self.last_heavy_shot = now
     
 
     # ai heavy shot
-    def ai_shoot_heavy(self, player, enemy_group):
+    def ai_shoot_heavy(self, player, enemy_group, asteroid_group):
         
         if self.character_type != "enemy1":
             return
@@ -262,6 +263,7 @@ class Character(pygame.sprite.Sprite):
             self.shoot_heavy(
                 target_player=player,
                 target_enemy_group=enemy_group,
+                asteroid_group=asteroid_group
                 )    
             self.last_heavy_shot = now
 
@@ -269,7 +271,7 @@ class Character(pygame.sprite.Sprite):
 
 
     # rocket check
-    def shoot_rocket(self, target_group, rocket_group):
+    def shoot_rocket(self, target_group, rocket_group, asteroid_group):
         current_time = pygame.time.get_ticks()
         
         # Enemy shoots at 1/3 the speed
@@ -278,7 +280,7 @@ class Character(pygame.sprite.Sprite):
             cooldown *= 3
             
         if current_time - self.last_rocket_time >= cooldown:
-            rocket = Rocket(self, target_group)
+            rocket = Rocket(self, target_group, asteroid_group)
             rocket_group.add(rocket)
             self.last_rocket_time = current_time
 
@@ -286,7 +288,7 @@ class Character(pygame.sprite.Sprite):
 
 
     # ai shoots
-    def ai_shoot_rocket(self, player, rocket_group):
+    def ai_shoot_rocket(self, player, rocket_group, asteroid_group):
         """Only enemy 2 can shoot rockets"""
         if self.character_type not in "enemy2":
             return
@@ -312,7 +314,8 @@ class Character(pygame.sprite.Sprite):
             if current_time - getattr(self, "last_rocket_time", 0) >= rocket_cooldown:
                 self.shoot_rocket(
                     pygame.sprite.Group([player]),
-                    rocket_group
+                    rocket_group,
+                    asteroid_group
                 )
                 self.last_rocket_time = current_time
 
