@@ -349,6 +349,7 @@ class Character(pygame.sprite.Sprite):
                     player.health = 100 # never go over 100 health
 
 
+
     # flash damage when hit
     def damage_flash(self):
         # check if currently flashing
@@ -367,3 +368,22 @@ class Character(pygame.sprite.Sprite):
             self.image = self.flash_images[frame]
         else:
             self.image = self.original_image
+
+
+class HealthBar():
+    
+    def __init__(self, healthBar_x, healthBar_y, health, max_health):
+        self.healthBar_x = healthBar_x
+        self.healthBar_y = healthBar_y
+        self.health = health
+        self.max_health = health
+        
+    def draw(self, health):
+        
+        from config import game_window, BLACK, CAYAN, WHITE
+        self.health = health
+        # calculate health ratio
+        ratio = self.health / self.max_health
+        pygame.draw.rect(game_window, BLACK, (self.healthBar_x -2, self.healthBar_y -2, 274, 9))
+        pygame.draw.rect(game_window, WHITE, (self.healthBar_x, self.healthBar_y, 270, 6))
+        pygame.draw.rect(game_window, CAYAN, (self.healthBar_x, self.healthBar_y, 270 * ratio, 6))

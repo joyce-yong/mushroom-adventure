@@ -10,10 +10,19 @@ from sprite_groups import enemy_group, player_lasers, heavyLaser_group, rockets_
 from asteroid import Asteroid
 
 
+font = pygame.font.SysFont('', 25)
 
 # create player object
 player = characterClass.Character('player', 800, 700, 2, 10)
 
+
+# drawa text for ui
+def drawText(text, font, text_col, text_x, text_y):
+    img = font.render(text, True, text_col)
+    config.game_window.blit(img, (text_x, text_y))
+
+# healthbar 
+health_bar = characterClass.HealthBar(10, 10, player.health, player.health)
 
 # music for game
 def play_music(song_path):
@@ -150,6 +159,12 @@ while playing:
 
     # movement 
     player.movement(config.moving_left, config.moving_right, config.moving_up, config.moving_down)
+
+
+    # ___ UI ____
+    
+    health_bar.draw(player.health)
+    drawText(f'Score: {config.score}', font, config.WHITE, 10, 25)
 
 
 
