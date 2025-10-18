@@ -54,6 +54,7 @@ moving_down = False
 shooting = False
 heavy_shooting = False
 rocket = False
+laserLine_fire = False
 
 
 

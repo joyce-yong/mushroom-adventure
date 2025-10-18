@@ -73,7 +73,46 @@ class Character(pygame.sprite.Sprite):
         self.check_alive(player)
         self.damage_flash()  
         
-       
+    
+
+
+    # check if player and ai is dead or alive
+    def check_alive(self, player):
+        
+        if self.health <= 0:
+            if self.alive: # we transition from alive to dead
+                self.health = 0
+                self.velocity = 0
+                self.alive = False
+                self.kill()
+
+                config.score += 50
+                player.health += 20
+                if player.health >= player.max_health:
+                    player.health = 100 # never go over 100 health
+
+
+
+    # flash damage when hit
+    def damage_flash(self):
+        # check if currently flashing
+        elapsed = pygame.time.get_ticks() - self.flash_start
+        flashing = elapsed < self.flash_time * len(self.flash_images)
+        
+        # only restart flash if health decreased and not already flashing
+        if self.health < self.prev_health and not flashing:
+            self.flash_start = pygame.time.get_ticks()
+            
+        self.prev_health = self.health # check for new health as this one to be compared for damage
+        
+        # Hanlde flashing animation
+        if flashing:
+            frame = (elapsed // self.flash_time) % len(self.flash_images)
+            self.image = self.flash_images[frame]
+        else:
+            self.image = self.original_image
+
+
 
 
 
@@ -343,7 +382,7 @@ class Character(pygame.sprite.Sprite):
         if pygame.time.get_ticks() - self.spawn_time < 1000:
             return
         
-        #detection rectangle
+        # detection rectangle
         detection_rect = pygame.Rect(
             self.rect.left -100,
             self.rect.top,
@@ -384,44 +423,61 @@ class Character(pygame.sprite.Sprite):
 
 
 
-
-
-
-    # check if player and ai is dead or alive
-    def check_alive(self, player):
+    # laser rapid fire for enemy method
+    def ai_shoot_laserline(self, player, asteroid_group=None, laserline_group=None):
+        from projectiles import LaserLine
+        """
+        Enemy 4 for now can only shoot laserline and the player to 
+        Only create one laserline and keep updating those object
+        """
+        # check if enemy object is enemy 4
+        if self.character_type != "enemy4":
+            return # skip logic if not enemy 4
         
-        if self.health <= 0:
-            if self.alive: # we transition from alive to dead
-                self.health = 0
-                self.velocity = 0
-                self.alive = False
-                self.kill()
+        # Remove existing laser line if enemy is dead
+        if not self.alive and laserline_group is not None: # if enemy has died and there is a laserline object so not of type None
+            for line in list(laserline_group):
+                if getattr(line, "character", None) == self:
+                    line.trigger(False)
+                    line.kill() # remove group
+                    
 
-                config.score += 50
-                player.health += 20
-                if player.health >= player.max_health:
-                    player.health = 100 # never go over 100 health
-
-
-
-    # flash damage when hit
-    def damage_flash(self):
-        # check if currently flashing
-        elapsed = pygame.time.get_ticks() - self.flash_start
-        flashing = elapsed < self.flash_time * len(self.flash_images)
         
-        # only restart flash if health decreased and not already flashing
-        if self.health < self.prev_health and not flashing:
-            self.flash_start = pygame.time.get_ticks()
+        # detection area
+        detection_rect = pygame.Rect(
+            self.rect.centerx -50,
+            self.rect.bottom,
+            100,
+            730
+        )
+        
+        # if player is in detection rect zone so colliding
+        if detection_rect.colliderect(player.rect):
+            existing_line = None
+            if laserline_group is not None: # if laserLine group object is there 
+                for line in laserline_group:
+                    if getattr(line, "character", None) == self:
+                        existing_line = line
+                        break
             
-        self.prev_health = self.health # check for new health as this one to be compared for damage
+            # create if one does not exists
+            if existing_line is None:
+                 enemy_line = LaserLine(self, is_player=False)
+                 laserline_group.add(enemy_line)
+                 existing_line = enemy_line
+                 
+            # Trigger fire while player is in range
+            existing_line.trigger(True)
         
-        # Hanlde flashing animation
-        if flashing:
-            frame = (elapsed // self.flash_time) % len(self.flash_images)
-            self.image = self.flash_images[frame]
-        else:
-            self.image = self.original_image
+        else: # if player is not in the detection zone
+            # stop firing
+            if laserline_group is not None:
+                for line in laserline_group:
+                    if getattr(line, "character", None) == self:
+                        line.trigger(False)
+
+
+    
 
 
 class HealthBar():

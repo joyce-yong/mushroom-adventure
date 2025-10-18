@@ -6,14 +6,18 @@ import config
 import characterClass
 
 
-from sprite_groups import enemy_group, player_lasers, heavyLaser_group, rockets_group, asteroid_group
+from sprite_groups import enemy_group, player_lasers, heavyLaser_group, rockets_group, asteroid_group, enemy_beam_group
 from asteroid import Asteroid
+from projectiles import LaserLine
 
 
 font = pygame.font.SysFont('', 25)
 
 # create player object
 player = characterClass.Character('player', 800, 700, 2, 10)
+
+# create player laserLine
+player_beam = LaserLine(player, is_player=True)
 
 
 # drawa text for ui
@@ -125,9 +129,16 @@ while playing:
         enemy.ai_shoot(player, enemy_group, asteroid_group) # ai_shooting plain laser
         enemy.ai_shoot_heavy(player, enemy_group, asteroid_group)
         enemy.ai_shoot_rocket(player, rockets_group, asteroid_group)
+        if enemy.character_type == "enemy4":
+            enemy.ai_shoot_laserline(player, asteroid_group=asteroid_group, laserline_group=enemy_beam_group)
         if enemy.character_type == "enemy5":
             enemy.ai_shoot_enemy5(player, enemy_group, asteroid_group)
 
+
+    # enemy laserline
+    for beam in enemy_beam_group:
+        beam.update(asteroid_group, enemy_group, player)
+        beam.draw(config.game_window)
 
 
     # lasers
@@ -142,6 +153,13 @@ while playing:
         )
     player.update_lasers()
 
+    # laserline player shooting
+    if config.laserLine_fire: # if we are shooting
+        player_beam.trigger(True)
+    else:
+        player_beam.trigger(False)
+    player_beam.update(asteroid_group, enemy_group, player)
+    player_beam.draw(config.game_window)
 
 
 
@@ -193,6 +211,7 @@ while playing:
             if event.key == pygame.K_a: config.shooting = True
             if event.key == pygame.K_d: config.heavy_shooting = True
             if event.key == pygame.K_s: config.rocket = True
+            if event.key == pygame.K_w: config.laserLine_fire = True
             
             if event.key == pygame.K_ESCAPE: playing = False
             
@@ -205,6 +224,7 @@ while playing:
             if event.key == pygame.K_a: config.shooting = False
             if event.key == pygame.K_d: config.heavy_shooting = False
             if event.key == pygame.K_s: config.rocket = False
+            if event.key == pygame.K_w: config.laserLine_fire = False
             
 
 

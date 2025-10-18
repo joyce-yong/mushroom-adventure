@@ -1,5 +1,5 @@
 import pygame
-import os
+import os, random
 
 import config
 
@@ -226,4 +226,129 @@ class Rocket(pygame.sprite.Sprite):
                     
                     
     def draw(self):
-        config.game_window.blit(self.image, self.rect) 
+        config.game_window.blit(self.image, self.rect)
+
+
+
+
+
+
+
+# ___ laser line class ___
+class LaserLine(pygame.sprite.Sprite):
+    def __init__(self, character, is_player=True):
+        super().__init__()
+        self.character = character
+        self.is_player = is_player
+        self.segments = [] # have a list of segments, [x, y , length , colour]
+        self.active = False
+        self.width = 2
+        self.speed = 35 # high speed 
+        self.color_player = [(0, 255, 255), (255, 255, 255), (255, 0, 0)] # cyan, white, red
+        self.color_ai = [(255, 0, 0), (25, 25, 0), (255, 255, 0)] # red, dark yellow/red , yellow
+        self.line_rect = pygame.Rect(0, 0, 0, 0)
+        
+        
+        # Fuel system
+        self.fuel = 100
+        self.max_fuel = self.fuel # keep track of our fuel limit
+        self.last_fuel_update = pygame.time.get_ticks() # keep track of time
+        self.fuel_drain_per_sec = 20 # more than recharge
+        self.fuel_recharge_per_sec = 10 # half the drain rate
+        
+        # keep track of our sound (rapid fire can cause sound issues if not tracked)
+        self.last_shot_sound = 0
+        self.shot_sound_delay = 100 # 100 ms between bursts (10 per 1 second)
+        
+        
+    # method to check if we are trigger this rapid fire laserLine
+    def trigger(self, active):
+        self.active = active and self.fuel > 0 # we must have fuel
+        
+        
+    # update method
+    def update(self, asteroid_group, enemy_group, player):
+        # track time in now
+        now = pygame.time.get_ticks()
+        delta = (now - self.last_fuel_update) / 1000
+        self.last_fuel_update = now # reset time to start tracking event(next) again
+        
+        # Fuel drain/recharge
+        if self.active and self.fuel > 0: # drain fuel when active
+            self.fuel -= self.fuel_drain_per_sec * delta
+            
+            
+            if self.fuel <= 0:
+                self.fuel = 0
+                self.active = False
+                
+        else: # recharge fuel when not active
+            self.fuel += self.fuel_recharge_per_sec * delta
+            if self.fuel > self.max_fuel: # stop extra fuel over 100%
+                self.fuel = self.max_fuel
+                
+        # Generate new segment only if active
+        if self.active:
+            x = self.character.rect.centerx
+            y = self.character.rect.top  if self.is_player else self.character.rect.bottom # if player we shoot from top rect upwards if ai we shoot from bottom rect downwards
+            color = random.choice(self.color_player if self.is_player else self.color_ai)
+            length = random.randint(30, 50)
+            self.segments.append([x, y, length, color])
+            
+        # Move segments
+        for seg in self.segments:
+            seg[1] -= self.speed if self.is_player else -self.speed
+            
+        # collision check per segment
+        surviving_segments = []
+        hit_player = set() # avoid multiple hits per frame
+        
+        for seg in self.segments:
+            seg_rect = pygame.Rect(seg[0]-self.width//2, seg[1], self.width, seg[2])
+            hit = False
+            
+            # asteroid collisions
+            for asteroid in asteroid_group:
+                if seg_rect.colliderect(asteroid.rect):
+                    asteroid.health -= 30
+                    hit = True
+                    break
+                
+            # Enemy collision if it is the player
+            if self.is_player:
+                for enemy in enemy_group:
+                    if seg_rect.colliderect(enemy.rect):
+                        enemy.health -= 5
+                        hit = True
+                        
+            else: # if enemy shoots
+                # ai laser hitting the player
+                if seg_rect.colliderect(player.rect) and player not in hit_player:
+                    # only apply when not already hit
+                    player.health -= 1
+                    hit_player.add(player)
+                    hit = True
+                
+        
+        
+            # Keep segments if it does not hit anything
+            if not hit and 0 <= seg[1] <= config.SCREEN_HEIGHT: # within this height
+                surviving_segments.append(seg)
+                
+        
+        self.segments = surviving_segments
+        
+        # update collision rect for the whole line
+        if self.segments:
+            top_y = min(seg[1] for seg in self.segments)
+            bottom_y = max(seg[1]+seg[2] for seg in self.segments)
+            self.line_rect = pygame.Rect(self.segments[0][0]-self.width//2, top_y, self.width, bottom_y-top_y)    
+        
+        else:
+            self.line_rect = pygame.Rect(0, 0, 0, 0)
+            
+    
+    def draw(self, surface):
+        for seg in self.segments:
+            pygame.draw.rect(surface, seg[3], (seg[0]-self.width//2, seg[1], self.width, seg[2]))    
+            
