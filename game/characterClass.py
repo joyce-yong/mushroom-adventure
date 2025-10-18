@@ -11,6 +11,15 @@ class Character(pygame.sprite.Sprite):
         self.velocity = velocity
         self.flip = False # if needed to flip in x direction
         self.health = 100 # player and enemy health
+
+        if self.character_type == "player":
+            self.health = 200
+        if self.character_type == "enemy4":
+            self.health = 200
+        if self.character_type == "enemy5":
+            self.health = 600
+        
+
         self.max_health = self.health # set max health to normal health for overflow
         self.alive = True
         
@@ -405,7 +414,8 @@ class Character(pygame.sprite.Sprite):
                 laser.prev_center = pygame.math.Vector2(laser.rect.center)
                 self.lasers.add(laser)
             self.last_shot_time = now # assign time to reset check to current time 
-            
+            config.laser_fx.play() # play over this sound this way
+
             
         # Heavy lasers
         if now - getattr(self, "last_heavy_shot", 0) >= self.heavy_cooldown:
@@ -420,6 +430,7 @@ class Character(pygame.sprite.Sprite):
                 self.lasers.add(heavy)
                 
             self.last_heavy_shot = now # reset time counter
+            config.channel_3.play(config.heavyLaser_fx)
 
 
 
@@ -441,7 +452,10 @@ class Character(pygame.sprite.Sprite):
                     line.trigger(False)
                     line.kill() # remove group
                     
-
+            # make sure sound stops when enemy is dead
+            if config.channel_8.get_busy():
+                config.channel_8.stop()
+            return
         
         # detection area
         detection_rect = pygame.Rect(

@@ -79,7 +79,7 @@ class HeavyLaser(Laser):
         # OVERRIDE DAMAGE AND SPEED FOR ENEMIES
         if shooter.character_type.startswith("enemy"):
             self.damage = 10 # enemy does 10% health damage or shield damage
-            self.velocity = 4
+            self.velocity = 6
         else:
             self.damage = damage # keep default damage for player
             self.velocity = 14
@@ -272,11 +272,20 @@ class LaserLine(pygame.sprite.Sprite):
         now = pygame.time.get_ticks()
         delta = (now - self.last_fuel_update) / 1000
         self.last_fuel_update = now # reset time to start tracking event(next) again
+
+        # play fx 
+        channel_sound = config.channel_8 if self.is_player else config.channel_9
         
         # Fuel drain/recharge
         if self.active and self.fuel > 0: # drain fuel when active
             self.fuel -= self.fuel_drain_per_sec * delta
-            
+            if self.fuel > 0.01 * self.max_fuel:
+                if not channel_sound.get_busy(): # check if it is not currently playing a sound
+                    channel_sound.set_volume(0.3)
+                    channel_sound.play(config.rapid_laser_fx, loops=-1)
+            else: # if sound is still playing
+                if channel_sound.get_busy():
+                    channel_sound.stop()
             
             if self.fuel <= 0:
                 self.fuel = 0
@@ -286,6 +295,8 @@ class LaserLine(pygame.sprite.Sprite):
             self.fuel += self.fuel_recharge_per_sec * delta
             if self.fuel > self.max_fuel: # stop extra fuel over 100%
                 self.fuel = self.max_fuel
+            if channel_sound.get_busy():
+                    channel_sound.stop()
                 
         # Generate new segment only if active
         if self.active:

@@ -75,14 +75,20 @@ pending_spawns = 0 # track how many enemies are left in current wave
 def spawn_enemy():
     x = random.randint(80, config.SCREEN_WIDTH - 80)
     y = -50 # spawn above screen
-    enemy_type = random.choice(['enemy1', 'enemy2', 'enemy3', 'enemy4', 'enemy5'])
+
+    enemy_type = random.choices(
+        ['enemy1', 'enemy2', 'enemy3', 'enemy4','enemy5'],
+        weights=[3, 3, 3, 2, 1], # enemy 1,2,3 is 3 times more likley to spawn
+        k=1
+    )[0]
+
+
     enemy = characterClass.Character(enemy_type, x, y, 0.5, 1)
     enemy_group.add(enemy)
     
-    if random.randint(1, 2) == 1:
-        enemy.flip = True
-    else:
-        enemy.flip = False
+    enemy.flip = random.choice([True, False])
+
+
 
 
 
