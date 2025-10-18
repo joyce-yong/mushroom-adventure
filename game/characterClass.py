@@ -11,6 +11,7 @@ class Character(pygame.sprite.Sprite):
         self.velocity = velocity
         self.flip = False # if needed to flip in x direction
         self.health = 100 # player and enemy health
+        self.shield = 200
 
         if self.character_type == "player":
             self.health = 200

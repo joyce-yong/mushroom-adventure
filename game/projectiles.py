@@ -4,6 +4,30 @@ import os, random
 import config
 
 
+
+# damage helper for edge cases and more flexibility
+
+def apply_damage(entity, dmg):
+    """Apply damage on a entity by entity bases
+       - Player and AI has a shield as a option
+       - Different enemies have shield and health values
+    
+    """
+    # player shield
+    if hasattr(entity, "character_type") and entity.character_type == "player" and hasattr(entity, "shield") and entity.shield > 0:
+        entity.shield -= dmg
+        if entity.shield < 0: # if player shield is broken or over
+            leftover = -entity.shield
+            entity.shield = 0 # make sure shield is zero after broken and not -n value to prevent damage overflow
+            entity.health -= leftover # after shield is set to 0 to prevent extra damage we apply left over damage to health
+            
+    else: # no shield 
+        entity.health -= dmg
+
+
+
+
+
 class Laser(pygame.sprite.Sprite):
     def __init__(self, shooter, player, enemy_group, asteroid_group, damage=10, velocity=12):
         super().__init__()
@@ -41,8 +65,7 @@ class Laser(pygame.sprite.Sprite):
         # Enemy shot laser: damage player
         if self.shooter.character_type.startswith("enemy"):
             if self.player and self.rect.colliderect(self.player.rect):
-                if hasattr(self.player, "health"):
-                    self.player.health -= self.damage
+                apply_damage(self.player, self.damage)
                 self.kill()
                 return
             
@@ -50,8 +73,7 @@ class Laser(pygame.sprite.Sprite):
             # if player has shot
             for enemy in self.enemy_group:
                 if self.rect.colliderect(enemy.rect):
-                    if hasattr(enemy, "health"):
-                        enemy.health -= self.damage
+                    apply_damage(enemy, self.damage)
                     self.kill()
                     return
                 
@@ -106,7 +128,10 @@ class HeavyLaser(Laser):
 class Rocket(pygame.sprite.Sprite):
     def __init__(self, shooter, target_group, asteroid_group):
         super().__init__()
+
+
         self.shooter = shooter
+        self.damage = 50 if self.shooter.character_type.startswith("enemy") else 200
         self.rocket_images = []
         self.explosion_images = []
         # state
@@ -184,9 +209,9 @@ class Rocket(pygame.sprite.Sprite):
                 if detection_area.colliderect(target.rect):
                     if hasattr(target, "health"):
                         if self.shooter.character_type.startswith("enemy"):
-                            target.health -= 50 # from player health
+                            apply_damage(target, self.damage)
                         else: # player
-                            target.health -= 150 # from enemy health
+                            apply_damage(target, self.damage)
                     hit_something = True
             
 
@@ -329,14 +354,14 @@ class LaserLine(pygame.sprite.Sprite):
             if self.is_player:
                 for enemy in enemy_group:
                     if seg_rect.colliderect(enemy.rect):
-                        enemy.health -= 5
+                        apply_damage(enemy, 3)
                         hit = True
                         
             else: # if enemy shoots
                 # ai laser hitting the player
                 if seg_rect.colliderect(player.rect) and player not in hit_player:
                     # only apply when not already hit
-                    player.health -= 1
+                    apply_damage(player, 1) # 3 times less damage then ai
                     hit_player.add(player)
                     hit = True
                 
