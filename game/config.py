@@ -4,7 +4,7 @@ import os
 
 
 pygame.init()
-pygame.display.set_caption('Mushroom Adventure')
+pygame.display.set_caption('MushMush')
 
 # Width and Height of screen
 INTERNAL_WIDTH = 1600

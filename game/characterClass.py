@@ -101,7 +101,12 @@ class Character(pygame.sprite.Sprite):
             dx *= 0.7071
             dy *= 0.7071
 
-        
+        # apply movement on rect
+        self.rect.x += dx * self.velocity
+        self.rect.y += dy * self.velocity
+
+
+
         # clamp player on screen
         if self.rect.left < 0:
             self.rect.left = 0 # stop from going off to left
@@ -120,15 +125,12 @@ class Character(pygame.sprite.Sprite):
             self.kill()
         if self.rect.top < -1:
             self.kill()
-            
+
+
+        # end of movement method 
 
 
 
-
-        # apply movement on rect
-        self.rect.x += dx * self.velocity
-        self.rect.y += dy * self.velocity
-        
 
 
 
