@@ -196,6 +196,10 @@ class Character(pygame.sprite.Sprite):
             dx *= 0.7071
             dy *= 0.7071
 
+
+
+
+
         # apply movement on rect
         self.rect.x += dx * self.velocity
         self.rect.y += dy * self.velocity
@@ -482,7 +486,7 @@ class Character(pygame.sprite.Sprite):
 
 
     # laser rapid fire for enemy method
-    def ai_shoot_laserline(self, player, asteroid_group=None, laserline_group=None):
+    def ai_shoot_laserline(self, player, asteroid_group=None, laserline_group=None, blackholes=None):
         from projectiles import LaserLine
         """
         Enemy 4 for now can only shoot laserline and the player to 
@@ -539,6 +543,11 @@ class Character(pygame.sprite.Sprite):
 
 
     
+
+
+
+
+
 
 
 class HealthBar():

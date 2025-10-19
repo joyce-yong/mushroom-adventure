@@ -2,19 +2,29 @@ import pygame
 import os
 from pygame import mixer
 import random
+
+
 import config
 import characterClass
-
-
-from sprite_groups import enemy_group, player_lasers, heavyLaser_group, rockets_group, asteroid_group, enemy_beam_group, explosion_group
-from asteroid import Asteroid
+from spaceObjects import Asteroid, BlackHole
 from projectiles import LaserLine
+from sprite_groups import (
+    enemy_group, 
+    player_lasers,  
+    heavyLaser_group, 
+    rockets_group, 
+    asteroid_group, 
+    enemy_beam_group, 
+    explosion_group,
+    blackholes_group,
+    enemy_lasers)
+
 
 
 font = pygame.font.SysFont('', 25)
 
 # create player object
-player = characterClass.Character('player', 800, 700, 2, 10)
+player = characterClass.Character('player', 950, 750, 2, 10)
 
 # create player laserLine
 player_beam = LaserLine(player, is_player=True)
@@ -121,13 +131,34 @@ while playing:
 
     if player.health <= 0:
         playing = False
-        print("You died, health is: ",player.health, ", with a score of:", config.score)
+        print("You died, health is: ",player.health, ", Shield: ", player.shield ,", with a score of:", config.score, ", Wave: ", wave_count)
     
     draw_scrolling_bg(config.game_window, config.background_list, config.scroll_state, speed=2)
     
     
-    player.draw()
-    player.update(player)
+
+
+    # black Hole and Quark star
+    if random.random() < 0.00125:
+        bh = BlackHole()
+        blackholes_group.add(bh)
+    # blackhole and quark group maps for gravity effects
+    groups_map = {
+        'player': player,
+        'enemy_group': enemy_group,
+        'asteroids': asteroid_group,
+        'player_lasers': player_lasers ,
+        'enemy_lasers': enemy_lasers,
+        'rockets_group': rockets_group,
+    }
+    for bh in list(blackholes_group):
+        bh.update(groups_map)
+        bh.draw(config.game_window)
+
+
+
+
+    
 
     # __ Explosions for death __
     for exp in explosion_group:
@@ -162,14 +193,14 @@ while playing:
         enemy.ai_shoot_heavy(player, enemy_group, asteroid_group)
         enemy.ai_shoot_rocket(player, rockets_group, asteroid_group)
         if enemy.character_type == "enemy4":
-            enemy.ai_shoot_laserline(player, asteroid_group=asteroid_group, laserline_group=enemy_beam_group)
+            enemy.ai_shoot_laserline(player, asteroid_group=asteroid_group, laserline_group=enemy_beam_group, blackholes=blackholes_group)
         if enemy.character_type == "enemy5":
             enemy.ai_shoot_enemy5(player, enemy_group, asteroid_group)
 
 
     # enemy laserline
     for beam in enemy_beam_group:
-        beam.update(asteroid_group, enemy_group, player)
+        beam.update(asteroid_group, enemy_group, player, blackholes_group)
         beam.draw(config.game_window)
 
 
@@ -190,7 +221,7 @@ while playing:
         player_beam.trigger(True)
     else:
         player_beam.trigger(False)
-    player_beam.update(asteroid_group, enemy_group, player)
+    player_beam.update(asteroid_group, enemy_group, player, blackholes_group)
     player_beam.draw(config.game_window)
 
 
@@ -208,7 +239,10 @@ while playing:
 
 
 
+    player.draw()
+    player.update(player)
 
+    
     # movement 
     player.movement(config.moving_left, config.moving_right, config.moving_up, config.moving_down)
 
@@ -258,7 +292,6 @@ while playing:
             if event.key == pygame.K_s: config.rocket = False
             if event.key == pygame.K_w: config.laserLine_fire = False
             
-
 
 
         # _______ Spawn enemy waves ________

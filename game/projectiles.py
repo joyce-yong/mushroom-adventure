@@ -2,6 +2,7 @@ import pygame
 import os, random
 
 import config
+import sprite_groups
 
 
 
@@ -24,8 +25,6 @@ def apply_damage(entity, dmg):
     else: # no shield 
         entity.health -= dmg
 
-    print("Health: ", entity.health, ", Shield: ", entity.shield )
-    
 
 
 
@@ -50,14 +49,52 @@ class Laser(pygame.sprite.Sprite):
         else:
             self.direction = -1 # player shoots up
             self.rect = self.image.get_rect(midbottom=shooter.rect.midtop)
+        
+        self.prev_center = pygame.math.Vector2(self.rect.center)
             
             
     # laser update method
     def update(self):
+
+        # black hole and quark star
+        prev = pygame.math.Vector2(self.prev_center)
+        move_vector = pygame.math.Vector2(0, self.velocity * self.direction)
+        current = prev + move_vector
+        
+        # check black holes and quar stars collision by testing segment prev vs current against each bh/qs rect
+        bh_group = getattr(sprite_groups, 'blackholes_group', None)
+        if bh_group:
+            # iterate copy to be safe
+            for bh in list(bh_group):
+                try:
+                    # clipline returns a clipped segment if intersects 
+                    if bh.rect.clipline(int(prev.x), int(prev.y), int(current.x), int(current.y)):
+                        # collided with BH or QS along the travel path / destroy or absorb shots
+                        try:
+                            self.kill()
+                        except Exception:
+                            pass
+                            print(" Black hole could not kill laser object")
+                        # skip update for killed laser
+                        return
+                except Exception:
+                    # fallback if clipline fails, we try basic rect check at current po
+                    if bh.rect.colliderect(pygame.Rect(int(current.x - self.rect.width/2),
+                        int(current.y - self.rect.height/2),
+                        self.rect.width,
+                        self.rect.height)):
+                        try: # try killing object
+                            self.kill()    
+                        except Exception:
+                            pass
+                        return
         
         # move laser
-        self.rect.y += self.velocity * self.direction
+        self.rect.center = (int(current.x), int(current.y))
+        # store for next frame
+        self.prev_center = pygame.math.Vector2(self.rect.center)
         
+
         # remove if laser goes of screen in y
         if self.rect.bottom < 0 or self.rect.top > config.SCREEN_HEIGHT:
             self.kill()
@@ -120,6 +157,9 @@ class HeavyLaser(Laser):
             self.direction = -1 # facing top screen
             
         self.image = img
+
+        # reset prev center after reassigning rect
+        self.prev_center = pygame.math.Vector2(self.rect.center)
 
 
 
@@ -239,6 +279,7 @@ class Rocket(pygame.sprite.Sprite):
                 self.kill() # remove object instance
                 
         else:
+
             # __ Explosion Animation __
             current_time = pygame.time.get_ticks()
             if current_time - self.last_update > self.frame_rate:
@@ -250,7 +291,9 @@ class Rocket(pygame.sprite.Sprite):
                 else:
                     self.kill()
                     
-                    
+
+
+
     def draw(self):
         config.game_window.blit(self.image, self.rect)
 
@@ -293,7 +336,7 @@ class LaserLine(pygame.sprite.Sprite):
         
         
     # update method
-    def update(self, asteroid_group, enemy_group, player):
+    def update(self, asteroid_group, enemy_group, player, blackholes_group):
         # track time in now
         now = pygame.time.get_ticks()
         delta = (now - self.last_fuel_update) / 1000
@@ -367,7 +410,14 @@ class LaserLine(pygame.sprite.Sprite):
                     hit = True
                 
         
-        
+            # Blackhole/quarkstar collision
+            for bh in blackholes_group or []:
+                if seg_rect.colliderect(bh.rect):
+                    hit = True
+                    break
+
+
+
             # Keep segments if it does not hit anything
             if not hit and 0 <= seg[1] <= config.SCREEN_HEIGHT: # within this height
                 surviving_segments.append(seg)
