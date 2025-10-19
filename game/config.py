@@ -72,6 +72,7 @@ rockets_fx = pygame.mixer.Sound(os.path.join('audio', 'tir.mp3'))
 explode_fx = pygame.mixer.Sound(os.path.join('audio', 'snd_bomb.ogg'))
 asteroid_fx = pygame.mixer.Sound(os.path.join('audio', 'breaPower.wav'))
 rapid_laser_fx = pygame.mixer.Sound(os.path.join('audio','explosion4.ogg'))
+shield_fx = pygame.mixer.Sound(os.path.join('audio', "teleport_01.ogg"))
 
 laser_fx.set_volume(0.2)
 
@@ -83,7 +84,7 @@ channel_5 = pygame.mixer.Channel(4)  # rocket
 channel_6 = pygame.mixer.Channel(5)  # explosion
 channel_7 = pygame.mixer.Channel(6)  # rapid fire
 channel_8 = pygame.mixer.Channel(7)  # rapid fire ai
-channel_9 = pygame.mixer.Channel(8)  # 
+channel_9 = pygame.mixer.Channel(8)  # shield fx
 channel_10 = pygame.mixer.Channel(9)  # 
 channel_11 = pygame.mixer.Channel(9)  # rapid fire
 channel_12 = pygame.mixer.Channel(10)  # rapid fire

@@ -55,6 +55,12 @@ class Character(pygame.sprite.Sprite):
         self.flash_start = 0
         self.original_image = self.image.copy()
 
+        # shield hit
+        self.prev_shield = self.shield
+        self.shield_time = 100 # ms / total shield duration in (ms per frame)
+        self.shield_start = 0
+        self.shield_original_image = self.image.copy()
+
         # ___ load flash images  ___
         self.flash_images = []
         for i in range(2): # flash 2 images in folder
@@ -63,6 +69,15 @@ class Character(pygame.sprite.Sprite):
             self.flash_images.append(img)
             
         self.flash_index = 0
+
+        # ___ Load shield images ___
+        self.shield_images = []
+        for i in range(2): # 2 pictures to loop
+            img = pygame.image.load(f'img/{self.character_type}/shield/{i}.png').convert_alpha()
+            img = pygame.transform.scale(img, (self.rect.width, self.rect.height))
+            self.shield_images.append(img)
+        
+        self.shield_index = 0
 
         # rockets
         self.last_rocket_time = 0
@@ -114,12 +129,27 @@ class Character(pygame.sprite.Sprite):
             self.flash_start = pygame.time.get_ticks()
             
         self.prev_health = self.health # check for new health as this one to be compared for damage
+
+        # __ shield falshing __
+        elapsed_shield = pygame.time.get_ticks() - self.shield_start
+        shield_flashing = elapsed_shield < self.shield_time * len(self.shield_images)
         
-        # Hanlde flashing animation
+        if self.shield < self.prev_shield and not shield_flashing:
+            config.channel_9.set_volume(0.6)
+            config.channel_9.play(config.shield_fx)
+            self.shield_start = pygame.time.get_ticks()
+        self.prev_shield = self.shield
+
+        # change what to show/ armor/shield damage
+        
+        # Hanlde flashing/shield animation
         if flashing:
             frame = (elapsed // self.flash_time) % len(self.flash_images)
             self.image = self.flash_images[frame]
-        else:
+        elif shield_flashing:
+            frame = (elapsed_shield // self.shield_time) % len(self.shield_images)
+            self.image = self.shield_images[frame]
+        else: # no damage taken
             self.image = self.original_image
 
 
