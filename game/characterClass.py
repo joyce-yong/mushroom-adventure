@@ -22,6 +22,7 @@ class Character(pygame.sprite.Sprite):
         
 
         self.max_health = self.health # set max health to normal health for overflow
+        self.max_shield = self.shield # set max shield to prevent shield from overflowing
         self.alive = True
         
         
@@ -111,10 +112,16 @@ class Character(pygame.sprite.Sprite):
                 self.alive = False
                 self.kill()
 
-                config.score += 50
-                player.health += 20
-                if player.health >= player.max_health:
-                    player.health = 100 # never go over 100 health
+                reward = config.enemy_rewards.get(self.character_type, {'score': 70,'shield': 30, 'health':0})
+                config.score += reward['score']
+                
+                # bonuses
+                player.shield += reward.get('shield', 0)
+                player.health += reward.get('health', 0)
+                
+                # clamp values added
+                player.shield = min(player.shield, player.max_shield)
+                player.health = min(player.health, player.max_health)
 
 
 

@@ -91,3 +91,16 @@ channel_12 = pygame.mixer.Channel(10)  # rapid fire
 channel_13 = pygame.mixer.Channel(11)  # rapid fire
 
 channel_2.set_volume(0.3)
+
+
+
+
+# enemy deat rewards
+enemy_rewards = {
+    'enemy1': {'score': 50, 'shield': 20,'health': 0},
+    'enemy2': {'score': 50, 'shield': 30,'health': 0},
+    'enemy3': {'score': 50, 'shield': 10,'health': 0},
+    'enemy4': {'score': 50, 'shield': 40,'health': 0},
+    'enemy5': {'score': 50, 'shield': 50,'health': 5},
+    'enemy6': {'score': 250, 'shield': 40,'health': 0}
+}
