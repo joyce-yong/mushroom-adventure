@@ -6,7 +6,7 @@ import config
 import characterClass
 
 
-from sprite_groups import enemy_group, player_lasers, heavyLaser_group, rockets_group, asteroid_group, enemy_beam_group
+from sprite_groups import enemy_group, player_lasers, heavyLaser_group, rockets_group, asteroid_group, enemy_beam_group, explosion_group
 from asteroid import Asteroid
 from projectiles import LaserLine
 
@@ -107,6 +107,11 @@ while playing:
     
     player.draw()
     player.update(player)
+
+    # __ Explosions for death __
+    for exp in explosion_group:
+        explosion_group.update()
+        exp.draw(config.game_window)
 
 
     for rocket in rockets_group:

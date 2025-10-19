@@ -2,6 +2,7 @@ import pygame
 import config
 
 from projectiles import Laser, Rocket
+from sprite_groups import explosion_group
 
 # create base character class
 class Character(pygame.sprite.Sprite):
@@ -112,6 +113,13 @@ class Character(pygame.sprite.Sprite):
                 self.alive = False
                 self.kill()
 
+                # Trigger explosion of dead enemy ship
+                explosion = Explosion(self.rect.center, explosion_frames, frame_duration=80)
+                explosion_group.add(explosion)
+
+                config.channel_10.set_volume(1)
+                config.channel_10.play(config.death_fx)
+
                 reward = config.enemy_rewards.get(self.character_type, {'score': 70,'shield': 30, 'health':0})
                 config.score += reward['score']
                 
@@ -122,6 +130,7 @@ class Character(pygame.sprite.Sprite):
                 # clamp values added
                 player.shield = min(player.shield, player.max_shield)
                 player.health = min(player.health, player.max_health)
+
 
 
 
@@ -549,3 +558,48 @@ class HealthBar():
         pygame.draw.rect(game_window, BLACK, (self.healthBar_x -2, self.healthBar_y -2, 274, 9))
         pygame.draw.rect(game_window, WHITE, (self.healthBar_x, self.healthBar_y, 270, 6))
         pygame.draw.rect(game_window, CAYAN, (self.healthBar_x, self.healthBar_y, 270 * ratio, 6))
+            
+        
+        
+       
+        
+        
+explosion_frames = []
+for i in range(3): # assume 3 images in explosion folder
+    img = pygame.image.load(f'img/death/{i}.png').convert_alpha()
+    explosion_frames.append(img)
+
+# when ship dies add explosion
+class Explosion(pygame.sprite.Sprite):
+    def __init__(self, center, frames, frame_duration=80):
+        """
+        center: (x, y)
+        frames: list of loaded pygame.Surface images
+        frame_duration: ms to show each frame in
+        """
+        super().__init__()
+        self.frames = frames
+        self.frame_duration = frame_duration
+        self.start_time = pygame.time.get_ticks()
+        self.index = 0
+        
+        self.image = self.frames[self.index]
+        self.rect = self.image.get_rect(center=center)
+        
+    # custom update method
+    def update(self):
+        now = pygame.time.get_ticks()
+        elapsed = now - self.start_time
+        
+        # switch to next frame
+        self.index = elapsed // self.frame_duration
+        if self.index >= len(self.frames):
+            self.kill() # explosion is done at end of index so we can remove object to save memory
+            return # skip rest as animation is done object is gone
+        
+        self.image = self.frames[self.index]
+        self.rect = self.image.get_rect(center=self.rect.center)
+        
+    
+    def draw(self, surface):
+        surface.blit(self.image, self.rect)
