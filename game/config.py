@@ -88,9 +88,9 @@ enemy_rewards = {
     'enemy1': {'score': 50, 'shield': 20,'health': 0},
     'enemy2': {'score': 50, 'shield': 30,'health': 0},
     'enemy3': {'score': 50, 'shield': 10,'health': 0},
-    'enemy4': {'score': 50, 'shield': 40,'health': 0},
-    'enemy5': {'score': 50, 'shield': 50,'health': 5},
-    'enemy6': {'score': 250, 'shield': 40,'health': 0}
+    'enemy4': {'score': 150, 'shield': 40,'health': 0},
+    'enemy5': {'score': 350, 'shield': 60,'health': 5},
+    'enemy6': {'score': 250, 'shield': 80,'health': 0}
 }
 
 

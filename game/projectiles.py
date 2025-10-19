@@ -24,7 +24,8 @@ def apply_damage(entity, dmg):
     else: # no shield 
         entity.health -= dmg
 
-
+    print("Health: ", entity.health, ", Shield: ", entity.shield )
+    
 
 
 
@@ -219,8 +220,8 @@ class Rocket(pygame.sprite.Sprite):
                 if hasattr(asteroid, "rect") and detection_area.colliderect(asteroid.rect):
                     asteroid.health -= 100
                     asteroid.break_apart(self.asteroid_group, rocket_hit=True)
+                    hit_something = True
                     
-
 
 
             # Trigger explosion
