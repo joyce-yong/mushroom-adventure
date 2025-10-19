@@ -35,19 +35,6 @@ CAYAN = (0, 255, 255)
 
 
 
-# background 
-scroll_state = {'y': 0}
-# background assets
-scale_width = 2
-scale_height = 1
-old_bg_img = pygame.image.load('img/background/space.png').convert_alpha()
-bg_img = pygame.transform.scale(old_bg_img, (old_bg_img.get_width() * scale_width * 2, old_bg_img.get_height() * scale_height))
-bg_height = bg_img.get_height()
-bg_width = bg_img.get_height()
-screen_width, screen_height = game_window.get_size()
-scale_bg = pygame.transform.scale(bg_img, (screen_width, screen_height))
-
-
 
 # action state var
 moving_left = False
@@ -105,3 +92,43 @@ enemy_rewards = {
     'enemy5': {'score': 50, 'shield': 50,'health': 5},
     'enemy6': {'score': 250, 'shield': 40,'health': 0}
 }
+
+
+
+
+# Background 
+scroll_state = {'y': 0}
+
+# background assets
+# list of background images and their file paths
+bg_files = [
+    'img/background/sd3.png',
+    'img/background/sd2.png',
+    'img/background/sd4.png',
+    'img/background/sd5.png',
+    'img/background/sd1.png'
+]
+
+# list to store scaled pygame.Surface objects
+background_list = []
+
+screen_width, screen_height = game_window.get_size()
+
+for file in bg_files:
+    old_bg = pygame.image.load(file).convert_alpha()
+    
+    # image scale factors
+    scale_width = 1
+    scale_height = 1
+    
+    # initial scaling
+    bg_img = pygame.transform.scale(
+        old_bg,
+        (old_bg.get_width() * scale_width,
+        old_bg.get_height() * scale_height))
+    
+    # new scaled image to fit screen
+    scaled_bg = pygame.transform.scale(bg_img, (screen_width, screen_height))
+    
+    # add to list
+    background_list.append(scaled_bg)

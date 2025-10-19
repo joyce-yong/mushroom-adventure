@@ -50,15 +50,36 @@ play_music(song1_path)
 # background y scroll
 scroll_y = 0
 
-def draw_scrolling_bg(surface, image, state, speed=3):
+def draw_scrolling_bg(surface, background_list, state, speed=3):
+    screen_width = surface.get_width()
+    screen_height = surface.get_height()
     state['y'] += speed
-    height = surface.get_height()
-
-    if state['y'] >= height:
-        state['y'] = 0
+    
+    num_images = len(background_list) # keep track of our list of images to loop
+    total_height = screen_height * num_images # get the total height of all pictures
+    
+    if state['y'] >= total_height:
+        state['y'] -= total_height
         
-    surface.blit(image, (0, state['y'] - height))
-    surface.blit(image, (0, state['y']))
+    # add first image again to loop seamlessly
+    imgs_to_draw = background_list + [background_list[0]] 
+    
+    for i, img in enumerate(imgs_to_draw):
+        y_pos = state['y'] - i * screen_height # preserve original scroll direction
+        
+        if y_pos < screen_height and y_pos + screen_height > 0:
+            # create rectangle for screen size to check if we should draw img or not / do not draw all images only the one on screen
+            source_rect = pygame.Rect(0, 0, screen_width, screen_height) 
+            
+            if y_pos < 0:
+                source_rect.top = -y_pos
+                source_rect.height = screen_height + y_pos
+            elif y_pos + screen_height > screen_height:
+                source_rect.height = screen_height - y_pos
+                
+            surface.blit(img, (0, max(y_pos, 0)), area=source_rect)
+
+
 
 
 
@@ -102,7 +123,7 @@ while playing:
         playing = False
         print("You died, health is: ",player.health, ", with a score of:", config.score)
     
-    draw_scrolling_bg(config.game_window, config.scale_bg, config.scroll_state, speed=3)
+    draw_scrolling_bg(config.game_window, config.background_list, config.scroll_state, speed=2)
     
     
     player.draw()
