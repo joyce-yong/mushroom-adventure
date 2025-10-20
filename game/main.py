@@ -18,17 +18,12 @@ from sprite_groups import (
     enemy_beam_group, 
     explosion_group,
     blackholes_group,
-    enemy_lasers)
+    enemy_lasers,
+    plasma_group)
 
 
 
 
-
-# create player object
-player = characterClass.Character('player', 950, 750, 2, 10)
-
-# create player laserLine
-player_beam = LaserLine(player, is_player=True)
 
 
 
@@ -96,8 +91,8 @@ def spawn_enemy():
     y = -50 # spawn above screen
 
     enemy_type = random.choices(
-        ['enemy1', 'enemy2', 'enemy3', 'enemy4','enemy5'],
-        weights=[3, 3, 3, 2, 1], # enemy 1,2,3 is 3 times more likley to spawn
+        ['enemy1', 'enemy2', 'enemy3', 'enemy4','enemy5', 'enemy6', 'enemy7'],
+        weights=[6, 6, 6, 4, 2, 4, 1], # enemy 1,2,3 is 3 times more likley to spawn
         k=1
     )[0]
 
@@ -124,6 +119,7 @@ def start_game():
     player_lasers.empty()
     enemy_beam_group.empty()
     enemy_lasers.empty()
+    plasma_group.empty()
 
     # --- Create fresh player & UI objects for this run ---
     # create player object
@@ -235,6 +231,12 @@ def start_game():
                 enemy.ai_shoot_laserline(player, asteroid_group=asteroid_group, laserline_group=enemy_beam_group, blackholes=blackholes_group)
             if enemy.character_type == "enemy5":
                 enemy.ai_shoot_enemy5(player, enemy_group, asteroid_group)
+            if enemy.character_type == "enemy6":
+                enemy.ai_shoot_plasma( player, asteroid_group, plasma_group)
+            if enemy.character_type == "enemy7":  
+                enemy.ai_enemy7_shoot(player, enemy_group, asteroid_group, rockets_group, plasma_group)
+
+            
 
 
         # enemy laserline
@@ -263,6 +265,13 @@ def start_game():
             player_beam.trigger(False)
         player_beam.update(asteroid_group, enemy_group, player, blackholes_group)
         player_beam.draw(config.game_window)
+
+        # plasma shot
+        if config.plasma_shooting:
+            player.shoot_plasma(enemy_group, asteroid_group, rockets_group)
+        for plasma in plasma_group:
+            plasma.update()
+            plasma.draw()
 
 
 
@@ -332,6 +341,7 @@ def start_game():
                 if event.key == pygame.K_d: config.heavy_shooting = True
                 if event.key == pygame.K_s: config.rocket = True
                 if event.key == pygame.K_w: config.laserLine_fire = True
+                if event.key == pygame.K_q: config.plasma_shooting = True
                 
                 if event.key == pygame.K_ESCAPE: playing = False
                 
@@ -345,6 +355,7 @@ def start_game():
                 if event.key == pygame.K_d: config.heavy_shooting = False
                 if event.key == pygame.K_s: config.rocket = False
                 if event.key == pygame.K_w: config.laserLine_fire = False
+                if event.key == pygame.K_q: config.plasma_shooting = False
                 
 
 

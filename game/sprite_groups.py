@@ -1,4 +1,4 @@
-import pygame
+import pygame # type: ignore
 
 
 #sprite Groups
@@ -12,3 +12,4 @@ asteroid_group = pygame.sprite.Group()
 enemy_beam_group = pygame.sprite.Group()
 explosion_group = pygame.sprite.Group()
 blackholes_group = pygame.sprite.Group()
+plasma_group = pygame.sprite.Group()

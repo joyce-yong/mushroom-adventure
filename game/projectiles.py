@@ -8,22 +8,31 @@ import sprite_groups
 
 # damage helper for edge cases and more flexibility
 
-def apply_damage(entity, dmg):
+def apply_damage(entity, dmg, damage_type="normal"):
     """Apply damage on a entity by entity bases
        - Player and AI has a shield as a option
        - Different enemies have shield and health values
-    
+       - Plasma does more damage to the shields
     """
-    # player shield
-    if hasattr(entity, "character_type") and entity.character_type == "player" and hasattr(entity, "shield") and entity.shield > 0:
-        entity.shield -= dmg
-        if entity.shield < 0: # if player shield is broken or over
-            leftover = -entity.shield
-            entity.shield = 0 # make sure shield is zero after broken and not -n value to prevent damage overflow
-            entity.health -= leftover # after shield is set to 0 to prevent extra damage we apply left over damage to health
-            
-    else: # no shield 
-        entity.health -= dmg
+    if hasattr(entity, "character_type") and hasattr(entity, "shield") :
+    
+        shield = getattr(entity, "shield", 0)
+        
+        if shield > 0:
+            # plasma damage first if shield
+            if damage_type == "plasma":
+                dmg_to_shield = dmg * 5 # plasma does 5 times more damage to shield than health
+            else:
+                dmg_to_shield = dmg
+                
+            entity.shield -= dmg_to_shield # apply damage
+            if entity.shield < 0:
+                leftover = -entity.shield
+                entity.shield = 0 # never go below zero shield
+                entity.health -= leftover # normal leftover damage
+    
+        else: # no shield 
+            entity.health -= dmg
 
 
 
@@ -440,4 +449,149 @@ class LaserLine(pygame.sprite.Sprite):
     def draw(self, surface):
         for seg in self.segments:
             pygame.draw.rect(surface, seg[3], (seg[0]-self.width//2, seg[1], self.width, seg[2]))    
+
+
+
+
+
+# ____ Plasma ____
+# does more damage to shields then health
+class Plasma(pygame.sprite.Sprite):
+    def __init__(self, shooter, target_group, asteroid_group):
+        super().__init__() # for parent base class Sprite internal
+        self.shooter = shooter
+        self.plasma_images = [] # plasma projectile images
+        self.explosion_images = [] # plasma explosion images
+        self.exploding = False 
+        self.frame_index = 0
+        self.last_update = pygame.time.get_ticks()
+        self.frame_rate = 70
+        self.damage_applied = False 
+        
+        # load plasma images
+        for filename in sorted(os.listdir("img/plasma")):
+            img = pygame.image.load(os.path.join("img/plasma", filename)).convert_alpha()
+            img = pygame.transform.scale(img, (39, 90))
+            if shooter.character_type.startswith("enemy"):
+                img = pygame.transform.flip(img, False, True)
+            self.plasma_images.append(img)
             
+        # load explosion images
+        for filename in sorted(os.listdir("img/plasmaExplosion")):
+            img = pygame.image.load(os.path.join("img/plasmaExplosion", filename)).convert_alpha()
+            self.explosion_images.append(img)
+            
+        self.image = self.plasma_images[0]
+        self.rect = self.image.get_rect(center=shooter.rect.center)
+        self.velocity = 8 if shooter.character_type.startswith("enemy") else -14
+        self.target_group = target_group
+        self.asteroid_group = asteroid_group
+        
+        
+    def update(self):
+        if not self.exploding:
+            # move plasma object
+            self.rect.y += self.velocity
+            
+            # Animate plasma object
+            now = pygame.time.get_ticks()
+            if now - self.last_update > self.frame_rate:
+                self.last_update = now
+                self.frame_index = (self.frame_index + 1) % len(self.plasma_images)
+                self.image = self.plasma_images[self.frame_index] # set current image to frame image in list 
+                
+            # black hole collision
+            bh_group = getattr(sprite_groups, "blackholes_group", None)
+            if bh_group:
+                for bh in list(bh_group):
+                    if self.rect.colliderect(bh.rect):
+                        self.kill()
+                        return
+                    
+                    
+                    
+            # check for asteroid collision
+            explosion_radius = 50 if self.shooter.character_type.startswith("enemy") else 60
+            detection_area = pygame.Rect(
+                self.rect.centerx - explosion_radius,
+                self.rect.centery - explosion_radius,
+                explosion_radius * 2,
+                explosion_radius * 2
+            )
+            
+            hit_something = False
+            for target in list(self.target_group):
+                if target is self.shooter:
+                    continue
+                if hasattr(target, "rect") and detection_area.colliderect(target.rect):
+                    hit_something = True
+                    break 
+            if not hit_something:
+                for asteroid in list(self.asteroid_group):
+                    if hasattr(asteroid, "rect") and detection_area.colliderect(asteroid.rect):
+                        hit_something = True
+                        break
+                    
+            if hit_something:
+                self.trigger_explosion()
+                
+            # kill plasma off screen
+            if self.rect.bottom < 0 or self.rect.top > config.SCREEN_HEIGHT:
+                self.kill()
+            if self.rect.right < 0 or self.rect.left > config.SCREEN_WIDTH:
+                self.kill()
+                
+        else:
+            # animate explosion of plasma
+            self.animate_explosion()
+            
+            
+    # method to trigger plasma explosion
+    def trigger_explosion(self):
+        self.exploding = True
+        self.frame_index = 0
+        self.image = self.explosion_images[self.frame_index]
+        self.rect = self.image.get_rect(center=self.rect.center)
+        config.channel_11.play(config.plasma_explode_fx)
+        
+        
+    # animate explosion images and apply damage
+    def animate_explosion(self):   
+        now = pygame.time.get_ticks()
+        if not self.damage_applied:                     
+            # apply area off effect damage AoE
+            explosion_radius = 50 if self.shooter.character_type.startswith("enemy") else 100
+            detection_area = pygame.Rect(
+                self.rect.centerx - explosion_radius,
+                self.rect.centery - explosion_radius,
+                explosion_radius * 2,
+                explosion_radius * 2
+            )
+
+            for target in list(self.target_group):
+                if target is self.shooter:
+                    continue
+                if hasattr(target, "rect") and detection_area.colliderect(target.rect):
+                    damage = 5 if self.shooter.character_type.startswith("enemy") else 20
+                    # apply damage using helper function 
+                    apply_damage(target, damage, damage_type="plasma")
+            
+            for asteroid in list(self.asteroid_group):
+                if hasattr(asteroid, "rect") and detection_area.colliderect(asteroid.rect):
+                    asteroid.health -= 20
+                    asteroid.break_apart(self.asteroid_group, rocket_hit=False)
+                    
+            self.damage_applied = True # Prevents repeated damage
+        
+        # explosion animation frames
+        if now - self.last_update > self.frame_rate:
+            self.last_update = now
+            self.frame_index += 1
+            if self.frame_index < len(self.explosion_images):
+                self.image = self.explosion_images[self.frame_index] # set current frame in list to image
+                self.rect = self.image.get_rect(center=self.rect.center)
+            else:
+                self.kill()
+    
+    def draw(self):
+        config.game_window.blit(self.image, self.rect)

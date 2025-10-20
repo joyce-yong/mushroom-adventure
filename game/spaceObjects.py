@@ -318,7 +318,7 @@ class BlackHole(pygame.sprite.Sprite):
         # create fall in kill zone
         if distance <= self.CENTER_KILL_DISTANCE:
             if getattr(sprite, 'character_type', None) == 'player':
-                sprite.health -= 50
+                sprite.health -= 500
                 if sprite.health <= 0:
                     sprite.alive = False
             try:

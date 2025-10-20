@@ -25,12 +25,10 @@ game_window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULL
 frameRate = pygame.time.Clock() # get time
 FPS = 60 # 60 frames 
 
-
 # text font
 button_font = pygame.font.SysFont(None, 70)
 font = pygame.font.SysFont('', 25)
 fontLarge = pygame.font.SysFont('', 65)
-
 
 # const colours
 BLACK = (0, 0, 0)
@@ -38,6 +36,8 @@ WHITE = (255, 255, 255)
 CAYAN = (0, 255, 255)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
+
+
 
 
 
@@ -51,6 +51,7 @@ shooting = False
 heavy_shooting = False
 rocket = False
 laserLine_fire = False
+plasma_shooting = False
 
 
 
@@ -67,6 +68,8 @@ asteroid_fx = pygame.mixer.Sound(os.path.join('audio', 'breaPower.wav'))
 rapid_laser_fx = pygame.mixer.Sound(os.path.join('audio','explosion4.ogg'))
 shield_fx = pygame.mixer.Sound(os.path.join('audio', "teleport_01.ogg"))
 death_fx = pygame.mixer.Sound(os.path.join('audio', 'explosion3.ogg'))
+plasma_explode_fx = pygame.mixer.Sound(os.path.join('audio', 'buzz.ogg'))
+plasma_fx = pygame.mixer.Sound(os.path.join('audio', 'misc_01.ogg'))
 
 laser_fx.set_volume(0.2)
 
@@ -80,14 +83,16 @@ channel_7 = pygame.mixer.Channel(6)  # rapid fire
 channel_8 = pygame.mixer.Channel(7)  # rapid fire ai
 channel_9 = pygame.mixer.Channel(8)  # shield fx
 channel_10 = pygame.mixer.Channel(9)  # death explosion
-channel_11 = pygame.mixer.Channel(9)  # rapid fire
-channel_12 = pygame.mixer.Channel(10)  # rapid fire
-channel_13 = pygame.mixer.Channel(11)  # rapid fire
+channel_11 = pygame.mixer.Channel(10)  # plasma explode
+channel_12 = pygame.mixer.Channel(11)  # plasma
+channel_13 = pygame.mixer.Channel(12)  # rapid fire
+channel_14 = pygame.mixer.Channel(13)  # rapid fire
+channel_15 = pygame.mixer.Channel(14)  # rapid fire
 
 channel_2.set_volume(0.3)
 
 
-
+# Dictionaries
 
 # enemy deat rewards
 enemy_rewards = {
@@ -96,8 +101,21 @@ enemy_rewards = {
     'enemy3': {'score': 50, 'shield': 10,'health': 0},
     'enemy4': {'score': 150, 'shield': 40,'health': 0},
     'enemy5': {'score': 350, 'shield': 60,'health': 5},
-    'enemy6': {'score': 250, 'shield': 80,'health': 0}
+    'enemy6': {'score': 250, 'shield': 80,'health': 0},
+    'enemy7': {'score': 750, 'shield': 120,'health': 10}
 }
+ship_stats = {
+    'player': {'health': 200, 'shield': 200},
+    'enemy1': {'health': 100, 'shield': -1},
+    'enemy2': {'health': 120, 'shield': -1},
+    'enemy3': {'health': 150, 'shield': -1},
+    'enemy4': {'health': 200, 'shield': -1},
+    'enemy5': {'health': 800, 'shield': -1},
+    'enemy6': {'health': 100, 'shield': 550},
+    'enemy7': {'health': 500, 'shield': 1350}
+}
+
+
 
 
 
