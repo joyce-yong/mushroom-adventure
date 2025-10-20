@@ -26,12 +26,18 @@ frameRate = pygame.time.Clock() # get time
 FPS = 60 # 60 frames 
 
 
+# text font
+button_font = pygame.font.SysFont(None, 70)
+font = pygame.font.SysFont('', 25)
+fontLarge = pygame.font.SysFont('', 65)
 
 
 # const colours
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 CAYAN = (0, 255, 255)
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
 
 
 

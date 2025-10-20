@@ -202,6 +202,7 @@ class Rocket(pygame.sprite.Sprite):
         # starts with rocket sprite
         self.image = self.rocket_images[0]
         self.rect = self.image.get_rect(center=shooter.rect.center)
+        self.original_image = self.image.copy()
         
         # direction enemy or player +/-
         if shooter.character_type.startswith("enemy"):
@@ -316,6 +317,7 @@ class LaserLine(pygame.sprite.Sprite):
         self.color_player = [(0, 255, 255), (255, 255, 255), (255, 0, 0)] # cyan, white, red
         self.color_ai = [(255, 0, 0), (25, 25, 0), (255, 255, 0)] # red, dark yellow/red , yellow
         self.line_rect = pygame.Rect(0, 0, 0, 0)
+        self.asteroid_group = sprite_groups.asteroid_group
         
         
         # Fuel system

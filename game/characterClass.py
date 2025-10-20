@@ -1,4 +1,4 @@
-import pygame
+import pygame # type: ignore
 import config
 
 from projectiles import Laser, Rocket
@@ -257,6 +257,10 @@ class Character(pygame.sprite.Sprite):
 
     # laser shoot check method for player and enemy
     def shoot_laser(self, target_player=None, target_enemy_group=None, asteroid_group=None):
+
+        if  asteroid_group is None:
+            return
+        
         current_time = pygame.time.get_ticks() # get time
         if current_time - self.laser_shot_time >= self.laser_cooldown:
             if self.character_type.startswith("enemy"):
@@ -320,6 +324,9 @@ class Character(pygame.sprite.Sprite):
 
     def shoot_heavy(self, target_player=None, target_enemy_group=None, asteroid_group=None):
         from projectiles import HeavyLaser
+
+        if target_enemy_group is None or asteroid_group is None:
+            return
         
         """Fire heavy lasers """ 
         now = pygame.time.get_ticks()
@@ -558,15 +565,24 @@ class HealthBar():
         self.health = health
         self.max_health = health
         
-    def draw(self, health):
+    def draw(self, health, shield=False):
         
-        from config import game_window, BLACK, CAYAN, WHITE
+        from config import game_window, BLACK, CAYAN, WHITE, RED, GREEN
         self.health = health
+        self.shield = shield
         # calculate health ratio
         ratio = self.health / self.max_health
-        pygame.draw.rect(game_window, BLACK, (self.healthBar_x -2, self.healthBar_y -2, 274, 9))
-        pygame.draw.rect(game_window, WHITE, (self.healthBar_x, self.healthBar_y, 270, 6))
-        pygame.draw.rect(game_window, CAYAN, (self.healthBar_x, self.healthBar_y, 270 * ratio, 6))
+
+        if self.shield:
+            pygame.draw.rect(game_window, BLACK, (self.healthBar_x + 50, self.healthBar_y -2, 174, 9))
+            pygame.draw.rect(game_window, WHITE, (self.healthBar_x + 50, self.healthBar_y, 170, 6))
+            pygame.draw.rect(game_window, CAYAN, (self.healthBar_x + 50, self.healthBar_y, 170 * ratio, 6))
+        else:
+            pygame.draw.rect(game_window, BLACK, (self.healthBar_x + 50, self.healthBar_y -2, 174, 9))
+            pygame.draw.rect(game_window, RED, (self.healthBar_x + 50, self.healthBar_y, 170, 6))
+            pygame.draw.rect(game_window, GREEN, (self.healthBar_x + 50, self.healthBar_y, 170 * ratio, 6))
+
+        
             
         
         
