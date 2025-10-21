@@ -1,5 +1,5 @@
-import pygame
-from pygame import mixer
+import pygame # type: ignore
+from pygame import mixer # type: ignore
 import os
 
 
@@ -25,10 +25,11 @@ game_window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULL
 frameRate = pygame.time.Clock() # get time
 FPS = 60 # 60 frames 
 
-# text font
+# fonts
 button_font = pygame.font.SysFont(None, 70)
 font = pygame.font.SysFont('', 25)
-fontLarge = pygame.font.SysFont('', 65)
+fontLarge = pygame.font.SysFont('', 45)
+
 
 # const colours
 BLACK = (0, 0, 0)
@@ -54,11 +55,6 @@ laserLine_fire = False
 plasma_shooting = False
 
 
-
-# Audio
-
-score = 0
-
 # audio
 laser_fx = pygame.mixer.Sound(os.path.join('audio', 'burst_fire.mp3'))
 heavyLaser_fx = pygame.mixer.Sound(os.path.join('audio', 'laserLarge.ogg'))
@@ -70,11 +66,11 @@ shield_fx = pygame.mixer.Sound(os.path.join('audio', "teleport_01.ogg"))
 death_fx = pygame.mixer.Sound(os.path.join('audio', 'explosion3.ogg'))
 plasma_explode_fx = pygame.mixer.Sound(os.path.join('audio', 'buzz.ogg'))
 plasma_fx = pygame.mixer.Sound(os.path.join('audio', 'misc_01.ogg'))
-
+mothership_fx = pygame.mixer.Sound(os.path.join('audio', 'boss.mp3'))
 laser_fx.set_volume(0.2)
 
 channel_1 = pygame.mixer.Channel(0)  # intros
-channel_2 = pygame.mixer.Channel(1)  # EMPTY()
+channel_2 = pygame.mixer.Channel(1)  # Asteroid
 channel_3 = pygame.mixer.Channel(2)  # laser
 channel_4 = pygame.mixer.Channel(3)  # Heavylaser
 channel_5 = pygame.mixer.Channel(4)  # rocket
@@ -85,13 +81,18 @@ channel_9 = pygame.mixer.Channel(8)  # shield fx
 channel_10 = pygame.mixer.Channel(9)  # death explosion
 channel_11 = pygame.mixer.Channel(10)  # plasma explode
 channel_12 = pygame.mixer.Channel(11)  # plasma
-channel_13 = pygame.mixer.Channel(12)  # rapid fire
+channel_13 = pygame.mixer.Channel(12)  # Long range strike
 channel_14 = pygame.mixer.Channel(13)  # rapid fire
 channel_15 = pygame.mixer.Channel(14)  # rapid fire
 
 channel_2.set_volume(0.3)
 
+# sound flags
+long_strike_sound_played = False
 
+
+# Stats
+score = 0
 # Dictionaries
 
 # enemy deat rewards
@@ -99,22 +100,29 @@ enemy_rewards = {
     'enemy1': {'score': 50, 'shield': 20,'health': 0},
     'enemy2': {'score': 50, 'shield': 30,'health': 0},
     'enemy3': {'score': 50, 'shield': 10,'health': 0},
-    'enemy4': {'score': 150, 'shield': 40,'health': 0},
-    'enemy5': {'score': 350, 'shield': 60,'health': 5},
-    'enemy6': {'score': 250, 'shield': 80,'health': 0},
-    'enemy7': {'score': 750, 'shield': 120,'health': 10}
+    'enemy4': {'score': 150, 'shield': 40,'health': 0}, # laserline enemy
+    'enemy5': {'score': 350, 'shield': 60,'health': 5}, # battleship
+    'enemy6': {'score': 250, 'shield': 80,'health': 0}, # plasma ship
+    'enemy7': {'score': 750, 'shield': 120,'health': 50}, # pwer battleship
+    'enemy8': {'score': 2750, 'shield': 200,'health': 100}, # mothership
+    'enemy9': {'score': 20, 'shield': 0,'health': 0} # mothership strike craft
 }
 ship_stats = {
     'player': {'health': 200, 'shield': 200},
-    'enemy1': {'health': 100, 'shield': -1},
+    'enemy1': {'health': 110, 'shield': -1},
     'enemy2': {'health': 120, 'shield': -1},
     'enemy3': {'health': 150, 'shield': -1},
     'enemy4': {'health': 200, 'shield': -1},
     'enemy5': {'health': 800, 'shield': -1},
     'enemy6': {'health': 100, 'shield': 550},
-    'enemy7': {'health': 500, 'shield': 1350}
+    'enemy7': {'health': 500, 'shield': 1350},
+    'enemy8': {'health': 1500, 'shield': 4550},
+    'enemy9': {'health': 60, 'shield': -1}
 }
 
+motherShip_boss_waves = [5, 15, 25, 35, 45, 55, 60, 65, 70, 77, 79, 81, 89, 100]
+motherShip_boss_active = False
+mothership_wave = 0 # keep track of current wave and mothership wave to spawn only once per wave level
 
 
 

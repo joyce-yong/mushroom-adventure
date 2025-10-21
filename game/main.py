@@ -1,6 +1,6 @@
-import pygame
-import os
-from pygame import mixer
+import pygame # type: ignore
+import os, gc
+from pygame import mixer # type: ignore
 import random
 
 
@@ -88,7 +88,7 @@ def draw_scrolling_bg(surface, background_list, state, speed=3):
 
 def spawn_enemy():
     x = random.randint(80, config.SCREEN_WIDTH - 80)
-    y = -50 # spawn above screen
+    y = -80 # spawn above screen
 
     enemy_type = random.choices(
         ['enemy1', 'enemy2', 'enemy3', 'enemy4','enemy5', 'enemy6', 'enemy7'],
@@ -105,6 +105,10 @@ def spawn_enemy():
 
 
 
+
+
+
+# ____ main ____
 def start_game():
     global current_song
 
@@ -126,11 +130,11 @@ def start_game():
     player = characterClass.Character('player', 950, 750, 2, 10)
 
     # ensure player's projectile container is a Group and linked
-    player.lasers = player_lasers  # MUST be a pygame.sprite.Group()
+    player.lasers = player_lasers
     player.asteroid_group = asteroid_group
     player.enemy_group = enemy_group
 
-    # single LaserLine instance for this run, linked to the fresh groups
+    # create player laserLine
     player_beam = LaserLine(player, is_player=True)
     player_beam.asteroid_group = asteroid_group
     player_beam.enemy_group = enemy_group
@@ -144,12 +148,12 @@ def start_game():
     config.shooting = config.heavy_shooting = config.rocket = config.laserLine_fire = False
     config.score = 0
 
-    # clear pending events (prevents leftover QUIT/KEYUP from earlier)
+    # clear pending events from last game played
     pygame.event.clear()
 
     # Game state variables
     playing = True
-    scroll_y = 0
+    scroll_y = 0 # background y scroll
     wave_count = 1
     pending_spawns = 0 # track how many enemies are left in current wave
 
@@ -168,7 +172,7 @@ def start_game():
 
         if player.health <= 0:
             playing = False
-            print("You died, health is: ",player.health, ", Shield: ", player.shield ,", with a score of:", config.score, ", Wave: ", wave_count)
+            print("You died, health is: ", player.health, ", with a score of:", config.score)
         
         draw_scrolling_bg(config.game_window, config.background_list, config.scroll_state, speed=2)
         
@@ -232,7 +236,7 @@ def start_game():
             if enemy.character_type == "enemy5":
                 enemy.ai_shoot_enemy5(player, enemy_group, asteroid_group)
             if enemy.character_type == "enemy6":
-                enemy.ai_shoot_plasma( player, asteroid_group, plasma_group)
+                enemy.ai_shoot_plasma(player, asteroid_group, plasma_group)
             if enemy.character_type == "enemy7":  
                 enemy.ai_enemy7_shoot(player, enemy_group, asteroid_group, rockets_group, plasma_group)
 
@@ -306,8 +310,18 @@ def start_game():
         # score
         menu.drawText(f'Score: {config.score}', config.font, config.WHITE, 10, 830)
         # wave count
-        menu.drawText(f'Wave: {wave_count}', config.font, config.RED, 10, 870)
+        menu.drawText(f'Waves: {wave_count}', config.font, config.RED, 10, 870)
 
+
+
+        if getattr(config, "motherShip_boss_active", False):
+            boss_present = any(e.character_type == "enemy8" for e in enemy_group) # keep track if there is a carrier mothership in the group(exist)
+            if boss_present:
+                config.motherShip_boss_active = True
+            # Only clear the flag if it was active and there are NO boss enemies left
+            elif not boss_present and config.mothership_wave < wave_count : # if now carrier boss and we are in diffrent wave than boss spawn wave
+                config.motherShip_boss_active = False
+        
 
 
 
@@ -325,6 +339,10 @@ def start_game():
                     current_song = 'song1'
                     play_music(song1_path)
             
+
+        # Run garbage collector here to clean old object where it can
+        gc.enable()
+        gc.collect(True) 
 
         # events
         for event in pygame.event.get():
@@ -361,16 +379,26 @@ def start_game():
 
             # _______ Spawn enemy waves ________
             if event.type == SPAWN_EVENT: # 12s
-                pending_spawns = wave_count # number to spawn this wave
-                wave_count += 1             # next wave is 1 larger
-                spawn_enemy()
-                pending_spawns -= 1         # we spawned one so less pending now
-                if pending_spawns > 0:
-                    pygame.time.set_timer(SPAWN_SINGLE_EVENT, 1000) # 100ms delay between enemies
+                # if next wave is a mothership 
+                if not getattr(config, "motherShip_boss_active", False) and wave_count in config.motherShip_boss_waves:
+                    mx = config.SCREEN_WIDTH
+                    my = 120
+                    mothership = characterClass.Mothership(mx, my, scale=0.75, velocity=1.2)
+                    enemy_group.add(mothership)
+                    config.motherShip_boss_active = True
+                    config.mothership_wave = wave_count # keep track of wave count to only spawn once per wave, if left out we spawn new enemy when old one dies
+                
+                else:
+                    pending_spawns = wave_count # number to spawn this wave
+                    wave_count += 1             # next wave is 1 larger
+                    spawn_enemy()
+                    pending_spawns -= 1         # we spawned one so less pending now
+                    if pending_spawns > 0:
+                        pygame.time.set_timer(SPAWN_SINGLE_EVENT, 1000) # 100ms delay between enemies
                     
-            # _____ Stagger enemy spawns _____\
+            # _____ Stagger enemy spawns _____
             if event.type == SPAWN_SINGLE_EVENT:
-                spawn_enemy()               # create enemy
+                spawn_enemy() # create enemy
                 pending_spawns -= 1
                 if pending_spawns <= 0:
                     pygame.time.set_timer(SPAWN_SINGLE_EVENT, 0) # stop stagger timer
@@ -381,7 +409,7 @@ def start_game():
     return "menu"
 
 
-# --- Main Loop Controller ---
+# Main Loop Controller
 game_state = "menu"
 while game_state != "exit":
     if game_state == "menu":

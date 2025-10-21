@@ -1,8 +1,9 @@
 import pygame # type: ignore
-import config
+import random
 
+import config
 from projectiles import Laser, Rocket
-from sprite_groups import explosion_group
+from sprite_groups import explosion_group, enemy_group
 
 # create base character class
 class Character(pygame.sprite.Sprite):
@@ -120,7 +121,7 @@ class Character(pygame.sprite.Sprite):
                 config.channel_10.set_volume(1)
                 config.channel_10.play(config.death_fx)
 
-                reward = config.enemy_rewards.get(self.character_type, {'score': 70,'shield': 30, 'health':0})
+                reward = config.enemy_rewards.get(self.character_type, {'score': 70, 'shield': 30, 'health':0})
                 config.score += reward['score']
                 
                 # bonuses
@@ -281,10 +282,10 @@ class Character(pygame.sprite.Sprite):
 
     # ai check for collision of vision
     def ai_shoot(self, player, enemy_group, asteroid_group):
-        """Only enemy 3 can shoot this laser for now"""
+        """Only enemy 3 and enemy 9 can shoot this laser"""
         
-        if self.character_type != "enemy3":
-            return # only ai3 shoots
+        if self.character_type not in ("enemy3", "enemy9"):
+            return # only ai3 and ai9 shoots
         
         # create a detection rect
         detection_rect = pygame.Rect(
@@ -296,7 +297,7 @@ class Character(pygame.sprite.Sprite):
         )    
         # if player is inside detection rect zone
         if detection_rect.colliderect(player.rect): # check detection rect and player rect overlapping
-            # Temporarily override cooldown ( 3 times slower than player)
+            # Temporarily override cooldown (3 times slower than player)
             original_cooldown = self.laser_cooldown
             self.laser_cooldown = original_cooldown * 3
             
@@ -328,6 +329,7 @@ class Character(pygame.sprite.Sprite):
         if target_enemy_group is None or asteroid_group is None:
             return
         
+
         """Fire heavy lasers """ 
         now = pygame.time.get_ticks()
         if now - getattr(self, "last_heavy_shot", 0) < self.heavy_cooldown:
@@ -565,7 +567,7 @@ class Character(pygame.sprite.Sprite):
             center_x, center_y = self.rect.center
             
             # offset the plasma in x/y 
-            offsets = [(-24,14), (30, 26)]
+            offsets = [(-24, 14), (30, 26)]
             
             for x_off, y_off in offsets:
                 plasma = Plasma(self, target_group, asteroid_group)
@@ -718,9 +720,7 @@ class HealthBar():
             
         
         
-       
-        
-        
+             
 explosion_frames = []
 for i in range(3): # assume 3 images in explosion folder
     img = pygame.image.load(f'img/death/{i}.png').convert_alpha()
@@ -760,3 +760,169 @@ class Explosion(pygame.sprite.Sprite):
     
     def draw(self, surface):
         surface.blit(self.image, self.rect)
+
+
+
+
+
+
+
+# Create special enemy , use inheritance from base class character
+class Mothership(Character):
+    SPAWN_INTERVAL_MS = 1000
+    
+    def __init__(self, ship_x, ship_y, scale=0.2, velocity=2.5, extra_scale=0.2):
+        super().__init__("enemy8", ship_x, ship_y, scale, velocity)
+        
+        
+        config.channel_1.play(config.mothership_fx)
+        
+        # only scale our image if the image exists and is not scale 1.0 / same scale size has picture size
+        if hasattr(self, "animation_list") and extra_scale != 1.0:
+            new_frames = []
+            for frame in self.animation_list:
+                w, h = frame.get_width(), frame.get_height()
+                frame = pygame.transform.scale(
+                    frame, (int(w * extra_scale), int(h * extra_scale))
+                )
+                new_frames.append(frame)
+                
+            self.animation_list = new_frames
+            self.frame_index = 0
+            self.image = self.animation_list[self.frame_index]
+            center = self.rect.center
+            self.rect = self.image.get_rect(center=center)
+            
+        self.character_type = "enemy8"
+        self.enemy_type = 8
+        
+        # setup for movement
+        self.vx = random.choice([-4, 4]) * max(0.6, self.velocity)
+        self.vy = random.choice([-4, 4]) * max(0.6, self.velocity)
+        self.last_spawn_time = pygame.time.get_ticks()
+        self.spawn_interval = Mothership.SPAWN_INTERVAL_MS
+        self.screen_W = config.SCREEN_WIDTH
+        self.screen_h = config.SCREEN_HEIGHT
+    
+
+
+    def update(self, player):
+        # move
+        self.rect.x += int(self.vx)
+        self.rect.y += int(self.vy)
+        
+        
+        # bounce off borders to stay on screen
+        if self.rect.left <= 0:
+            self.rect.left = 0
+            self.vx = abs(self.vx) # throw away sign to force x in positive or 0
+        if self.rect.right >= self.screen_W:
+            self.rect.right = self.screen_W 
+            self.vx = -abs(self.vx) # stops from going off in right
+        if self.rect.top <= 0:
+            self.rect.top = 0
+            self.vy = abs(self.vy) # no sign so can not go under 0
+        if self.rect.bottom >= self.screen_h:
+            self.rect.bottom = self.screen_h
+            self.vy = -abs(self.vy)
+            
+        # add small random jitter to avoid predictable bouncing
+        if random.random() < 0.01:
+            self.vx += random.uniform(-0.4, 0.4)
+            self.vy += random.uniform(-0.4, 0.4)
+            # clamp the speed
+            max_speed = max(1.2, self.velocity * 2.0)
+            self.vx = max(-max_speed, min(max_speed, self.vx))
+            self.vy = max(-max_speed, min(max_speed, self.vy))
+            
+            
+        # spawn ufo fighters  
+        now = pygame.time.get_ticks()
+        if now - self.last_spawn_time >= self.spawn_interval and self.alive: 
+            self.last_spawn_time = now
+            self.spawn_fighter()
+            
+        # preserve base class character flash and shield effect 
+        super().update(player)
+
+
+    def spawn_fighter(self):
+        """
+            - Create small craft AI 9 from motherships hanger doors
+            - Create from left,right,top,bottom center of rect
+            - Add to enemy_group
+        """
+        positions = []
+        cx, cy = self.rect.center
+        # left hanger (left center)
+        positions.append((self.rect.left - 20, cy))
+        # right hanger (right center) 
+        positions.append((self.rect.right + 20, cy))
+        # top hanger (top center)
+        positions.append((cx, self.rect.top - 20))   
+        # bottom hanger (bottom center)
+        positions.append((cx, self.rect.bottom + 20))
+        
+        pos = random.choice(positions)
+        fighter = Fighter(pos[0], pos[1]) # default scale and velocity
+        # ensure fighter starts inside the visible region when spawned
+        fighter.rect.clamp_ip(pygame.Rect(0, 0, self.screen_W, self.screen_h))
+        enemy_group.add(fighter)
+
+
+# fighter class for small craft out of hangers
+class Fighter(Character):
+    """ 
+        - small craft fighter
+        - Spawns from mothership and moves randomly on screen
+        - bounces of edges and corners of screen
+        - Uses same laser as base laser and enemy 3 does
+    """
+    def __init__(self, ship_x, ship_y, scale=0.45, velocity=2.2):
+        super().__init__("enemy9", ship_x, ship_y, scale, velocity)
+        # random initial direction 
+        self.vx = random.choice([-1, 1]) * self.velocity // 2
+        self.vy = random.choice([-1, 1]) * self.velocity // 2
+        self.screen_w = config.SCREEN_WIDTH
+        self.screen_h = config.SCREEN_HEIGHT
+        
+    
+    def update(self, player):
+        # move
+        self.rect.x += int(self.vx)
+        self.rect.y += int(self.vy)
+        
+        # bounce on screen edges
+        if self.rect.left <= 0:
+            self.rect.left = 0
+            self.vx = abs(self.vx)
+        if self.rect.right >= self.screen_w:
+            self.rect.right = self.screen_w
+            self.vx = -abs(self.vx)
+        if self.rect.top <= 0:
+            self.rect.top = 0
+            self.vy = abs(self.vy)
+        if self.rect.bottom >= self.screen_h:
+            self.rect.bottom = self.screen_h
+            self.vy = -abs(self.vy)
+        
+        
+        # change direction randomly every now and then
+        if random.random() < 0.02:
+            self.vx += random.uniform(-1.2, 1.2)
+            self.vy += random.uniform(-3.8, 3.8)
+
+            # clamp speed so it does not go close to zero 
+            max_speed = max(1.5, self.velocity * 2.2)
+            min_speed = 0.8 # ensure fixed min y movement
+            if 0 < abs(self.vx) < min_speed:
+                self.vx = min_speed * (1 if self.vx > 0 else -1)
+            if 0 < abs(self.vy) < min_speed:
+                self.vy = min_speed * (1 if self.vy > 0 else -1)
+                
+            self.vx = max(-max_speed, min(max_speed, self.vx))
+            self.vy = max(-max_speed, min(max_speed, self.vy))
+            
+            
+        # call update and ai shoot methods like shoot_laser from base class
+        super().update(player)

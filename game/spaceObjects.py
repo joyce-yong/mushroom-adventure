@@ -1,4 +1,4 @@
-import pygame
+import pygame # type: ignore
 import random, os
 import config
 
@@ -152,7 +152,7 @@ class BlackHole(pygame.sprite.Sprite):
     PLAYER_ATTRACCTION_STRENGTH = 1.5 # multiplies distance
     AI_ATTRACTION_RANGE = 260
     AI_ATTRACTION_STRENGTH = 0.001
-    ASTEROID_ATTRACTION_RANGE = 400
+    ASTEROID_ATTRACTION_RANGE = 290
     ASTEROID_ATTRACTION_STRENGTH = 0.005
     
     CENTER_KILL_DISTANCE = 2
@@ -291,11 +291,14 @@ class BlackHole(pygame.sprite.Sprite):
         else:
             range_limit = self.AI_ATTRACTION_RANGE
             
-        # return (abs(dx) <= range_limit) and (abs(dy) <= range_limit) (for square checking)
-        return (dx*dx + dy*dy) <= range_limit*range_limit # for a circular region of gravity pull
+        return (abs(dx) <= range_limit) and (abs(dy) <= range_limit)
                 
                 
     def apply_to_sprite(self, sprite, group=None):
+        
+        # enemy 8 has anti black hole tech so we skip it
+        if getattr(sprite, 'character_type', None) == 'enemy8':
+            return # skip logic for enemy 8
         
         # ignore dead sprites 
         if hasattr(sprite, 'alive') and not sprite.alive:

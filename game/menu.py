@@ -4,12 +4,12 @@ import config
 
 # ___ Menu Setup ___
 menu_images = []
-for i in range(5): # flash 2 images in folder
+for i in range(5): # flash 5 images in order
     menu_bg = pygame.image.load(os.path.join(f'img/menu/{i}.png')).convert()
     menu_bg = pygame.transform.scale(menu_bg, (config.screen_width, config.screen_height))
     menu_images.append(menu_bg)
 
-# Helper function to create UI buttons
+# helper function to create UI buttons
 def draw_button(text, x, y, width, height, inactive_col, active_col):
     mouse = pygame.mouse.get_pos()
     click = pygame.mouse.get_pressed()
@@ -29,7 +29,7 @@ def draw_button(text, x, y, width, height, inactive_col, active_col):
 # ___ Menu screen ___
 
 def menu_screen():
-    """Draws and handles main menu"""
+    
     in_menu = True
     global is_paused
 
@@ -40,23 +40,21 @@ def menu_screen():
     while in_menu:
         now = pygame.time.get_ticks()
         if now - last_switch >= switch_interval:
-            idx = (idx + 1) % len(menu_images)  # loop to next image
+            idx = (idx + 1) % len(menu_images)  # next in list
             last_switch = now # reset time to current time to track next switch
 
         # draw current image
         config.game_window.blit(menu_images[idx], (0, 0))
 
         # --- Draw buttons ---
-        play_pressed = draw_button("Play", 800, 50, 350, 100, (0, 80, 0), (0, 200, 0))
-        sound_pressed = draw_button("Sound", 400, 50, 350, 100, (0, 80, 80), (0, 200, 200))
-        exit_pressed = draw_button("Exit", 1200, 50, 350, 100, (80, 0, 0), (255, 60, 60))
+        play_pressed = draw_button("Play", 650, 50, 350, 100, (0, 80, 0), (0, 200, 0))
+        sound_pressed = draw_button("Sound", 250, 50, 350, 100, (0, 80, 80), (0, 200, 200))
+        exit_pressed = draw_button("Exit", 1050, 50, 350, 100, (80, 0, 0), (255, 60, 60))
 
         # draw score
-        drawText(f'Score: {config.score}', config.fontLarge, config.CAYAN, 870, 180)
+        drawText(f'Score: {config.score}', config.fontLarge, config.CAYAN, 740, 180)
 
-
-
-        # Handle buttons actions and menu state
+        # handle buttons actions and menu state
         if play_pressed:
             return "play"
         if sound_pressed:

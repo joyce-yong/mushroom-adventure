@@ -1,4 +1,4 @@
-import pygame
+import pygame # type: ignore
 import os, random
 
 import config
@@ -215,7 +215,7 @@ class Rocket(pygame.sprite.Sprite):
         
         # direction enemy or player +/-
         if shooter.character_type.startswith("enemy"):
-            self.velocity = 4 # move for down the screen
+            self.velocity = 6 # move for down the screen
         else: # player
             self.velocity = -12 # move up the screen
             
@@ -354,7 +354,7 @@ class LaserLine(pygame.sprite.Sprite):
         self.last_fuel_update = now # reset time to start tracking event(next) again
 
         # play fx 
-        channel_sound = config.channel_8 if self.is_player else config.channel_9
+        channel_sound = config.channel_7 if self.is_player else config.channel_8
         
         # Fuel drain/recharge
         if self.active and self.fuel > 0: # drain fuel when active
@@ -381,7 +381,7 @@ class LaserLine(pygame.sprite.Sprite):
         # Generate new segment only if active
         if self.active:
             x = self.character.rect.centerx
-            y = self.character.rect.top  if self.is_player else self.character.rect.bottom # if player we shoot from top rect upwards if ai we shoot from bottom rect downwards
+            y = self.character.rect.top if self.is_player else self.character.rect.bottom # if player we shoot from top rect upwards if ai we shoot from bottom rect downwards
             color = random.choice(self.color_player if self.is_player else self.color_ai)
             length = random.randint(30, 50)
             self.segments.append([x, y, length, color])
