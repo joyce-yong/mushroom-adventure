@@ -4,7 +4,7 @@ import config
 
 # ___ Menu Setup ___
 menu_images = []
-for i in range(5): # flash 5 images in order
+for i in range(19): # flash 19 images in order
     menu_bg = pygame.image.load(os.path.join(f'img/menu/{i}.png')).convert()
     menu_bg = pygame.transform.scale(menu_bg, (config.screen_width, config.screen_height))
     menu_images.append(menu_bg)
@@ -35,7 +35,7 @@ def menu_screen():
 
     idx = 0  # index of current menu image
     last_switch = pygame.time.get_ticks()
-    switch_interval = 1000  # time until next image
+    switch_interval = 100  # time until next image
 
     while in_menu:
         now = pygame.time.get_ticks()
@@ -76,6 +76,8 @@ def menu_screen():
         pygame.display.update()
         config.frameRate.tick(30) # half the frames of game 30 vs 60
 
+
+# ___ Story Intro ___
 
 
 
