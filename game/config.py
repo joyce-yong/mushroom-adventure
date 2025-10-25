@@ -26,9 +26,21 @@ frameRate = pygame.time.Clock() # get time
 FPS = 60 # 60 frames 
 
 # fonts
-button_font = pygame.font.SysFont(None, 70)
-font = pygame.font.SysFont('', 25)
-fontLarge = pygame.font.SysFont('', 45)
+FONT_PATH = os.path.join('game', 'SpaceMadness.ttf')
+
+if os.path.exists(FONT_PATH):
+    button_font = pygame.font.Font(FONT_PATH, 68)
+    title_font = pygame.font.Font(FONT_PATH, 90)
+    story_font = pygame.font.Font(FONT_PATH, 45)
+    font = pygame.font.Font(FONT_PATH, 25)
+    fontLarge = pygame.font.Font(FONT_PATH, 40)
+else:
+    # fallback to system font if the custom font is missing
+    button_font = pygame.font.SysFont(None, 65)
+    title_font = pygame.font.SysFont(None, 90)
+    story_font = pygame.font.SysFont(None, 45)
+    font = pygame.font.SysFont(None, 25)
+    fontLarge = pygame.font.SysFont(None, 40)
 
 
 # const colours
@@ -37,11 +49,6 @@ WHITE = (255, 255, 255)
 CAYAN = (0, 255, 255)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
-LIGHT_BLUE = (112, 248, 255)
-
-
-
-
 
 
 # action state var
@@ -124,8 +131,6 @@ ship_stats = {
 motherShip_boss_waves = [5, 15, 25, 35, 45, 55, 60, 65, 70, 77, 79, 81, 89, 100]
 motherShip_boss_active = False
 mothership_wave = 0 # keep track of current wave and mothership wave to spawn only once per wave level
-
-
 
 
 

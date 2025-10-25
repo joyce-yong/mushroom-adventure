@@ -140,8 +140,8 @@ def start_game():
     player_beam.enemy_group = enemy_group
     player_beam.blackholes_group = blackholes_group
 
-    health_bar = characterClass.HealthBar(30, 795, player.health, player.health)
-    shield_bar = characterClass.HealthBar(30, 815, player.shield, player.shield)
+    health_bar = characterClass.HealthBar(55, 797, player.health, player.health)
+    shield_bar = characterClass.HealthBar(55, 817, player.shield, player.shield)
 
     # reset input flags so stale state doesn't persist
     config.moving_left = config.moving_right = config.moving_up = config.moving_down = False
@@ -409,7 +409,7 @@ def start_game():
     return "menu"
 
 
-# Main Loop Controller
+# # Main Loop Controller
 game_state = "menu"
 while game_state != "exit":
     if game_state == "menu":
