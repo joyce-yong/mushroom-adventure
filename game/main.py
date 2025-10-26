@@ -163,8 +163,8 @@ def start_game(level_number=2):
         config.game_window.fill(config.BLACK)
 
         if player.health <= 0:
-            playing = False
             print("You died, health is: ", player.health, ", with a score of:", config.score)
+            return "result_screen"
         
         draw_scrolling_bg(config.game_window, level_background_list, config.scroll_state, speed=2)
         
@@ -349,7 +349,8 @@ def start_game(level_number=2):
                 if event.key == pygame.K_w: config.laserLine_fire = True
                 if event.key == pygame.K_q: config.plasma_shooting = True
                 
-                if event.key == pygame.K_ESCAPE: playing = False
+                if event.key == pygame.K_ESCAPE: 
+                    return "menu"
                 
             
             if event.type == pygame.KEYUP:
@@ -410,14 +411,16 @@ while game_state != "exit":
         config.channel_8.stop()
         config.channel_7.stop()
         game_state = menu.menu_screen()
-    if game_state == "play":
+    elif game_state == "play":
         game_state = start_game(current_level)
-    if game_state == "level_select":
+    elif game_state == "level_select":
         selected_level = menu.level_select()
         if isinstance(selected_level, int):
             current_level = selected_level
             game_state = "play"
         elif selected_level == "menu":
             game_state = "menu"
+    elif game_state == "result_screen":
+        game_state = menu.result_screen()
 
 pygame.quit()

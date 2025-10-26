@@ -245,7 +245,6 @@ def controls():
 
 
 # ___ Menu screen ___
-
 def menu_screen():
     
     in_menu = True
@@ -306,6 +305,54 @@ def menu_screen():
         pygame.display.update()
         config.frameRate.tick(30) # half the frames of game 30 vs 60
 
+
+
+# ___ Result screen ___
+def result_screen():
+    title_text = "MISSION FAILED"
+    title_y = int(config.screen_height * 0.25)
+    
+    # get the final score
+    final_score = config.score
+    
+    score_text = f"Score: {final_score}"
+    score_y = int(config.screen_height * 0.45)
+    
+    instruction_text = "Press Space to return to menu"
+    instruction_y = int(config.screen_height * 0.70)
+    
+    # background
+    result_bg = pygame.Surface((config.screen_width, config.screen_height))
+    result_bg.fill((20, 10, 20))
+    config.game_window.blit(result_bg, (0, 0))
+    
+    # draw title
+    title_surface = config.title_font.render(title_text, True, config.RED)
+    title_rect = title_surface.get_rect(center=(config.screen_width // 2, title_y))
+    config.game_window.blit(title_surface, title_rect)
+    
+    # draw score
+    score_surface = config.fontLarge.render(score_text, True, config.CAYAN)
+    score_rect = score_surface.get_rect(center=(config.screen_width // 2, score_y))
+    config.game_window.blit(score_surface, score_rect)
+    
+    # draw instruction
+    instruction_surface = config.fontLarge.render(instruction_text, True, config.WHITE)
+    instruction_rect = instruction_surface.get_rect(center=(config.screen_width // 2, instruction_y))
+    config.game_window.blit(instruction_surface, instruction_rect)
+    
+    pygame.display.flip()
+    
+    waiting = True
+    while waiting:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                waiting = False
+    
+    return "menu"
 
 
 # drawa text for UI
