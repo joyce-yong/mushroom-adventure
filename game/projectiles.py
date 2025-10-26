@@ -195,9 +195,15 @@ class Rocket(pygame.sprite.Sprite):
         self.asteroid_group = asteroid_group
         
         # __load rocket images __
-        for filename in sorted(os.listdir("img/rocket")):
-            img = pygame.image.load(os.path.join("img/rocket", filename)).convert_alpha()
-            img = pygame.transform.scale(img, (30, 60)) # scale the rocket down smaller
+        # use different rocket sprites for player and enemy
+        if shooter.character_type.startswith("enemy"):
+            rocket_folder = "img/rocket"
+        else:
+            rocket_folder = "img/mushroomRocket"
+        
+        for filename in sorted(os.listdir(rocket_folder)):
+            img = pygame.image.load(os.path.join(rocket_folder, filename)).convert_alpha()
+            img = pygame.transform.scale(img, (20, 50)) # scale the rocket down smaller
             # flip rocket for enemies
             if shooter.character_type.startswith("enemy"):
                 img = pygame.transform.flip(img, False, True)
