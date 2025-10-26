@@ -64,9 +64,9 @@ def level_select():
         level2_pressed = draw_button("Level 2", x_offset, y_pos, config.WHITE, config.CAYAN)
 
         if level1_pressed:
-            return "play"
+            return 1
         if level2_pressed:
-            return "play"
+            return 2
         
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -273,7 +273,7 @@ def menu_screen():
         x_start = int(config.screen_width - total_width) // 2
         x_offset = x_start
 
-        play_pressed = draw_button("Start", x_offset, y_pos, config.WHITE, config.CAYAN)
+        start_pressed = draw_button("Start", x_offset, y_pos, config.WHITE, config.CAYAN)
         x_offset += x_spacing
 
         story_pressed = draw_button("Story", x_offset, y_pos, config.WHITE, config.CAYAN)
@@ -288,10 +288,8 @@ def menu_screen():
         #drawText(f'Score: {config.score}', config.fontLarge, config.CAYAN, 740, 180)
 
         # handle buttons actions and menu state
-        if play_pressed:
-            next_state = level_select()
-            if next_state != "menu":
-                return next_state
+        if start_pressed:
+            return "level_select"
         if story_pressed:
             show_story()
         if controls_pressed:

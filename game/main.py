@@ -20,11 +20,7 @@ from sprite_groups import (
     blackholes_group,
     enemy_lasers,
     plasma_group)
-
-
-
-
-
+from level_config import get_level_config, load_background_images
 
 
 
@@ -45,8 +41,6 @@ song1_path = os.path.join('audio', 'Dark Techno EBM Background Music.mp3')
 
 # Play initial song on start
 play_music(song1_path)
-
-
 
 
 
@@ -81,21 +75,15 @@ def draw_scrolling_bg(surface, background_list, state, speed=3):
 
 
 
-
-
-
-
-
-def spawn_enemy():
+def spawn_enemy(level_config):
     x = random.randint(80, config.SCREEN_WIDTH - 80)
     y = -80 # spawn above screen
 
     enemy_type = random.choices(
-        ['enemy1', 'enemy2', 'enemy3', 'enemy4','enemy5', 'enemy6', 'enemy7'],
-        weights=[6, 6, 6, 4, 2, 4, 1], # enemy 1,2,3 is 3 times more likley to spawn
+        level_config['enemy_types'],
+        weights=level_config['enemy_weights'],
         k=1
     )[0]
-
 
     enemy = characterClass.Character(enemy_type, x, y, 0.5, 1)
     enemy_group.add(enemy)
@@ -106,11 +94,16 @@ def spawn_enemy():
 
 
 
-
-
 # ____ main ____
-def start_game():
+def start_game(level_number=2):
     global current_song
+    
+    # Get level configuration
+    level_config = get_level_config(level_number)
+    print(f"Starting {level_config['name']}")
+    
+    # Load background
+    level_background_list = load_background_images(level_config)
 
 
     # --- Ensure global sprite groups exist and are fresh (use .empty() to keep same Group objects) ---
@@ -145,7 +138,7 @@ def start_game():
 
     # reset input flags so stale state doesn't persist
     config.moving_left = config.moving_right = config.moving_up = config.moving_down = False
-    config.shooting = config.heavy_shooting = config.rocket = config.laserLine_fire = False
+    config.shooting = config.heavy_shooting = config.rocket = config.laserLine_fire = config.plasma_shooting = False
     config.score = 0
 
     # clear pending events from last game played
@@ -160,9 +153,8 @@ def start_game():
     # Spawn events (use local event ids so no conflict)
     SPAWN_EVENT = pygame.USEREVENT + 1
     SPAWN_SINGLE_EVENT = pygame.USEREVENT + 2
-    spawn_interval = 12000 # 12 sec (60000 for 1 min)
+    spawn_interval = level_config['enemy_spawn_interval']
     pygame.time.set_timer(SPAWN_EVENT, spawn_interval)
-
 
 
 
@@ -174,13 +166,12 @@ def start_game():
             playing = False
             print("You died, health is: ", player.health, ", with a score of:", config.score)
         
-        draw_scrolling_bg(config.game_window, config.background_list, config.scroll_state, speed=2)
+        draw_scrolling_bg(config.game_window, level_background_list, config.scroll_state, speed=2)
         
         
 
-
-        # black Hole and Quark star
-        if random.random() < 0.00125:
+        # black Hole and Quark star (only if enabled for this level)
+        if level_config['blackholes_enabled'] and random.random() < 0.00125:
             bh = BlackHole()
             blackholes_group.add(bh)
         # blackhole and quark group maps for gravity effects
@@ -198,21 +189,19 @@ def start_game():
 
 
  
-
         # __ Explosions for death __
         for exp in explosion_group:
             explosion_group.update()
             exp.draw(config.game_window)
 
-
         for rocket in rockets_group:
             rocket.update()
             rocket.draw()
         
-        if config.rocket:
+        if config.rocket and level_config['weapons']['rocket']:
             player.shoot_rocket(enemy_group, rockets_group, asteroid_group)
         
-        if random.random() < 0.005:
+        if random.random() < level_config['asteroid_spawn_rate']:
             x = random.randint(50, config.SCREEN_WIDTH - 50)
             asteroid = Asteroid(x, -50, scale=1.0, health=20)
             asteroid_group.add(asteroid)
@@ -248,13 +237,12 @@ def start_game():
             beam.update(asteroid_group, enemy_group, player, blackholes_group)
             beam.draw(config.game_window)
 
-
         # lasers
         for laser in player_lasers:
             laser.update()
             laser.draw()
-        # if player shoots
-        if config.shooting:
+        # if player shoots (only if weapon is enabled for this level)
+        if config.shooting and level_config['weapons']['laser']:
             player.shoot_laser(
                 target_player=player,
                 target_enemy_group=enemy_group,
@@ -262,16 +250,17 @@ def start_game():
             )
         player.update_lasers()
 
-        # laserline player shooting
-        if config.laserLine_fire: # if we are shooting
-            player_beam.trigger(True)
-        else:
-            player_beam.trigger(False)
-        player_beam.update(asteroid_group, enemy_group, player, blackholes_group)
-        player_beam.draw(config.game_window)
+        # laserline player shooting (only if weapon is enabled for this level)
+        if level_config['weapons']['laser_line']:
+            if config.laserLine_fire: # if we are shooting
+                player_beam.trigger(True)
+            else:
+                player_beam.trigger(False)
+            player_beam.update(asteroid_group, enemy_group, player, blackholes_group)
+            player_beam.draw(config.game_window)
 
-        # plasma shot
-        if config.plasma_shooting:
+        # plasma shot (only if weapon is enabled for this level)
+        if config.plasma_shooting and level_config['weapons']['plasma']:
             player.shoot_plasma(enemy_group, asteroid_group, rockets_group)
         for plasma in plasma_group:
             plasma.update()
@@ -279,11 +268,11 @@ def start_game():
 
 
 
-        # heavy laser
+        # heavy laser (only if weapon is enabled for this level)
         heavyLaser_group.draw(config.game_window)
         heavyLaser_group.update()
         
-        if getattr(config, "heavy_shooting", False):
+        if getattr(config, "heavy_shooting", False) and level_config['weapons']['heavy_laser']:
             player.shoot_heavy(
                 target_player=player,
                 target_enemy_group=enemy_group,
@@ -322,7 +311,6 @@ def start_game():
             elif not boss_present and config.mothership_wave < wave_count : # if now carrier boss and we are in diffrent wave than boss spawn wave
                 config.motherShip_boss_active = False
         
-
 
 
 
@@ -379,8 +367,10 @@ def start_game():
 
             # _______ Spawn enemy waves ________
             if event.type == SPAWN_EVENT: # 12s
-                # if next wave is a mothership 
-                if not getattr(config, "motherShip_boss_active", False) and wave_count in config.motherShip_boss_waves:
+                # if next wave is a mothership (only if enabled for this level)
+                if (level_config['mothership_enabled'] and 
+                    not getattr(config, "motherShip_boss_active", False) and 
+                    wave_count in config.motherShip_boss_waves):
                     mx = config.SCREEN_WIDTH
                     my = 120
                     mothership = characterClass.Mothership(mx, my, scale=0.75, velocity=1.2)
@@ -389,16 +379,18 @@ def start_game():
                     config.mothership_wave = wave_count # keep track of wave count to only spawn once per wave, if left out we spawn new enemy when old one dies
                 
                 else:
-                    pending_spawns = wave_count # number to spawn this wave
+                    # Calculate how many enemies to spawn this wave
+                    enemies_to_spawn = wave_count * level_config['wave_size_multiplier']
+                    pending_spawns = enemies_to_spawn
                     wave_count += 1             # next wave is 1 larger
-                    spawn_enemy()
+                    spawn_enemy(level_config)
                     pending_spawns -= 1         # we spawned one so less pending now
                     if pending_spawns > 0:
                         pygame.time.set_timer(SPAWN_SINGLE_EVENT, 1000) # 100ms delay between enemies
                     
             # _____ Stagger enemy spawns _____
             if event.type == SPAWN_SINGLE_EVENT:
-                spawn_enemy() # create enemy
+                spawn_enemy(level_config) # create enemy
                 pending_spawns -= 1
                 if pending_spawns <= 0:
                     pygame.time.set_timer(SPAWN_SINGLE_EVENT, 0) # stop stagger timer
@@ -411,12 +403,21 @@ def start_game():
 
 # # Main Loop Controller
 game_state = "menu"
+current_level = 2
+
 while game_state != "exit":
     if game_state == "menu":
         config.channel_8.stop()
         config.channel_7.stop()
         game_state = menu.menu_screen()
     if game_state == "play":
-        game_state = start_game()
+        game_state = start_game(current_level)
+    if game_state == "level_select":
+        selected_level = menu.level_select()
+        if isinstance(selected_level, int):
+            current_level = selected_level
+            game_state = "play"
+        elif selected_level == "menu":
+            game_state = "menu"
 
 pygame.quit()
