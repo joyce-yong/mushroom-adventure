@@ -121,16 +121,18 @@ class Character(pygame.sprite.Sprite):
                 config.channel_10.set_volume(1)
                 config.channel_10.play(config.death_fx)
 
-                reward = config.enemy_rewards.get(self.character_type, {'score': 70, 'shield': 30, 'health':0})
-                config.score += reward['score']
-                
-                # bonuses
-                player.shield += reward.get('shield', 0)
-                player.health += reward.get('health', 0)
-                
-                # clamp values added
-                player.shield = min(player.shield, player.max_shield)
-                player.health = min(player.health, player.max_health)
+                # only give rewards if this is an enemy (not the player)
+                if self.character_type.startswith("enemy"):
+                    reward = config.enemy_rewards.get(self.character_type, {'score': 70, 'shield': 30, 'health':0})
+                    config.score += reward['score']
+                    
+                    # bonuses
+                    player.shield += reward.get('shield', 0)
+                    player.health += reward.get('health', 0)
+                    
+                    # clamp values added
+                    player.shield = min(player.shield, player.max_shield)
+                    player.health = min(player.health, player.max_health)
 
 
 
