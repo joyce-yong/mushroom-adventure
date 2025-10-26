@@ -115,7 +115,7 @@ enemy_rewards = {
     'enemy8': {'score': 2750, 'shield': 200,'health': 100}, # mothership
     'enemy9': {'score': 20, 'shield': 0,'health': 0} # mothership strike craft
 }
-ship_stats = {
+character_stats = {
     'player': {'health': 200, 'shield': 200},
     'enemy1': {'health': 110, 'shield': -1},
     'enemy2': {'health': 120, 'shield': -1},

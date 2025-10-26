@@ -15,7 +15,7 @@ class Character(pygame.sprite.Sprite):
         self.health = 100 # player and enemy health
         self.shield = 200
 
-        stats = config.ship_stats.get(self.character_type, {'health': 100, 'shield': -1})
+        stats = config.character_stats.get(self.character_type, {'health': 100, 'shield': -1})
         self.health = stats.get('health', 100)
         self.shield = stats.get('shield', -1)
 
