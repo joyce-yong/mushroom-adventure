@@ -281,6 +281,12 @@ def start_game(level_number=2):
 
 
 
+        # check for death after blackhole updates (blackholes can instantly kill player)
+        if player.health <= 0:
+            print("You died, health is: ", player.health, ", with a score of:", config.score)
+            return "result_screen"
+        
+        
         player.draw()
         player.update(player)
 

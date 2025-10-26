@@ -321,14 +321,17 @@ class BlackHole(pygame.sprite.Sprite):
         # create fall in kill zone
         if distance <= self.CENTER_KILL_DISTANCE:
             if getattr(sprite, 'character_type', None) == 'player':
-                sprite.health -= 500
-                if sprite.health <= 0:
-                    sprite.alive = False
-            try:
-                sprite.kill()
-            except Exception:
-                pass
-                print("Blackhole: Could not kill target")
+                # instantly kill player when sucked into blackhole
+                sprite.health = 0
+                sprite.alive = False
+                print("Player sucked into blackhole")
+            else:
+                # for enemies and other sprites, use normal kill
+                try:
+                    sprite.kill()
+                except Exception:
+                    pass
+                    print("Blackhole: Could not kill target")
             return
         
         # Attraction strength
