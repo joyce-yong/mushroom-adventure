@@ -3,6 +3,8 @@ import os
 import sys
 import config
 
+from cursor import Cursor
+
 # ___ Menu Setup ___
 menu_images = []
 for i in range(19): # flash 19 images in order
@@ -36,6 +38,8 @@ def draw_button(text, x_center, y_pos, base_color=config.WHITE, hover_color=conf
 # ___ Level select screen ___
 def level_select():
     in_select = True
+    cursor = Cursor("img/cursor", frame_rate=120)
+    cursor.load_frames("img/cursor", scale_factor=1.5)
 
     title_text = "SELECT LEVEL"
     title_y = int(config.screen_height * 0.15)
@@ -74,6 +78,9 @@ def level_select():
                 sys.exit()
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 return "menu"
+            
+        cursor.update()
+        cursor.draw(config.game_window)
 
         pygame.display.update()
         config.frameRate.tick(30) 
@@ -81,7 +88,21 @@ def level_select():
 
 # ___ Story screen ___
 def show_story():
-    story_lines = [
+    story_bg = pygame.Surface((config.screen_width, config.screen_height))
+    story_bg.fill((12, 20, 40))
+
+    title_font = config.title_font
+    story_font = config.story_font
+
+    title_text = "MUSHMUSH: ORIGINS"
+    title_surface = title_font.render(title_text, True, config.WHITE)
+    title_rect = title_surface.get_rect(center=(config.screen_width // 2, int(config.screen_height * 0.15)))
+
+    instruction_font = config.fontLarge
+    instruction_surface = instruction_font.render("Press ESC to return to menu", True, config.WHITE)
+    instruction_rect = instruction_surface.get_rect(center=(config.screen_width // 2, int(config.screen_height * 0.9)))
+
+    story_text = [
         "We are the Spore Fitters, a fragmented fungal mind that requires",
         "a host. Though we possess ultimate evolutionary power, our true",
         "strength is fragile. You, MushMush, are the seeker:",
@@ -91,86 +112,60 @@ def show_story():
         "are now your enemies. Bypass their forces and dodge the space debris.",
         "Your mission: Reach the Cryogenic Safe Zone."
     ]
-    instruction_text = "Press ESC to return to menu"
 
-    title_text = "MUSHMUSH: ORIGINS"
-    title_y = int(config.screen_height * 0.15)
-    story_start_y = int(config.screen_height * 0.30)
+    story_lines = []
     line_height = 55
+    story_start_y = int(config.screen_height * 0.30)
+    typing_speed = 30
 
-    story_bg = pygame.Surface((config.screen_width, config.screen_height))
-    story_bg.fill((10, 20, 40))
-    config.game_window.blit(story_bg, (0, 0))
+    cursor = Cursor("img/cursor", frame_rate=120)
+    cursor.load_frames("img/cursor", scale_factor=1.5)
+    clock = pygame.time.Clock()
 
-    title_surface = config.title_font.render(title_text, True, config.WHITE)
-    title_rect = title_surface.get_rect(center=(config.screen_width // 2, title_y))
-    config.game_window.blit(title_surface, title_rect)
-    pygame.display.flip()
+    current_line = 0
+    current_char = 0
+    last_type_time = pygame.time.get_ticks()
 
-    def typewriter_text(text, line_index, color=config.CAYAN, delay=0.03):
-        x = config.screen_width // 2
-        y = story_start_y + line_index * line_height
-        current_text = ""
+    showing_story = True
+    while showing_story:
+        config.game_window.blit(story_bg, (0, 0))
+        config.game_window.blit(title_surface, title_rect)
 
-        def redraw_static():
-            config.game_window.blit(story_bg, (0, 0))
-            config.game_window.blit(title_surface, title_rect)
-            
-            # draw previous lines
-            for i, prev in enumerate(story_lines[:line_index]):
-                prev_surface = config.story_font.render(prev, True, color)
-                prev_rect = prev_surface.get_rect(center=(x, story_start_y + i * line_height))
-                config.game_window.blit(prev_surface, prev_rect) 
-
-        for char in text:
-            current_text += char
-            text_surface = config.story_font.render(current_text, True, color)
-            text_rect = text_surface.get_rect(center=(x, y))
-
-            redraw_static()
-            config.game_window.blit(text_surface, text_rect)
-            pygame.display.flip()
-            pygame.time.delay(int(delay * 1000))
-
-            # check for events during typing to allow quick exit
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-
-    # typewriter sequence
-    for i, line in enumerate(story_lines):
-        typewriter_text(line, i)
-        pygame.time.delay(400)
-
-    instruction_y = story_start_y + len(story_lines) * line_height + 100
-
-    story_bg.fill((10, 20, 40))
-    config.game_window.blit(story_bg, (0, 0))
-    config.game_window.blit(title_surface, title_rect)
-
-    # redraw all completed story lines
-    for i, line in enumerate(story_lines):
-        x = config.screen_width // 2
-        y = story_start_y + i * line_height
-        line_surface = config.story_font.render(line, True, config.CAYAN)
-        line_rect = line_surface.get_rect(center=(x, y))
-        config.game_window.blit(line_surface, line_rect)
-
-    instruction_surface = config.fontLarge.render(instruction_text, True, config.WHITE)
-    instruction_rect = instruction_surface.get_rect(center=(config.screen_width // 2, instruction_y))
-    config.game_window.blit(instruction_surface, instruction_rect)
-
-    pygame.display.flip()
-
-    waiting = True
-    while waiting:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                waiting = False
+                showing_story = False
+
+        # typing effect
+        if current_line < len(story_text):
+            now = pygame.time.get_ticks()
+            if now - last_type_time > typing_speed:
+                current_char += 1
+                if current_char > len(story_text[current_line]):
+                    story_lines.append(story_text[current_line])
+                    current_line += 1
+                    current_char = 0
+                last_type_time = now
+
+        for i, line in enumerate(story_lines):
+            line_surface = story_font.render(line, True, config.CAYAN)
+            line_rect = line_surface.get_rect(center=(config.screen_width // 2, story_start_y + i * line_height))
+            config.game_window.blit(line_surface, line_rect)
+
+        if current_line < len(story_text):
+            typing_surface = story_font.render(story_text[current_line][:current_char], True, config.CAYAN)
+            typing_rect = typing_surface.get_rect(center=(config.screen_width // 2, story_start_y + current_line * line_height))
+            config.game_window.blit(typing_surface, typing_rect)
+
+        config.game_window.blit(instruction_surface, instruction_rect)
+
+        cursor.update()
+        cursor.draw(config.game_window)
+
+        pygame.display.update()
+        clock.tick(60)
 
     return "menu"
 
@@ -178,6 +173,8 @@ def show_story():
 # ___ Controls screen ___
 def controls():
     showing = True
+    cursor = Cursor("img/cursor", frame_rate=120)
+    cursor.load_frames("img/cursor", scale_factor=1.5)
 
     title_text = "CONTROLS"
     title_y = int(config.screen_height * 0.15)
@@ -232,6 +229,12 @@ def controls():
         instruction_rect = instruction_surface.get_rect(center=(config.screen_width // 2, instruction_y))
         config.game_window.blit(instruction_surface, instruction_rect)
 
+        cursor.update()
+        cursor.draw(config.game_window)
+
+        pygame.display.update()
+        config.frameRate.tick(30)
+
         pygame.display.flip()
         
         for event in pygame.event.get():
@@ -246,13 +249,15 @@ def controls():
 
 # ___ Menu screen ___
 def menu_screen():
-    
     in_menu = True
     global is_paused
 
     idx = 0  # index of current menu image
     last_switch = pygame.time.get_ticks()
     switch_interval = 100  # time until next image
+
+    cursor = Cursor("img/cursor", frame_rate=120)
+    cursor.load_frames("img/cursor", scale_factor=1.5)
 
     while in_menu:
         now = pygame.time.get_ticks()
@@ -283,9 +288,6 @@ def menu_screen():
 
         quit_pressed = draw_button("Quit", x_offset, y_pos, config.WHITE, (255, 60, 60))
 
-        # draw score
-        #drawText(f'Score: {config.score}', config.fontLarge, config.CAYAN, 740, 180)
-
         # handle buttons actions and menu state
         if start_pressed:
             return "level_select"
@@ -302,6 +304,9 @@ def menu_screen():
                 pygame.quit()
                 exit()
 
+        cursor.update()
+        cursor.draw(config.game_window)
+
         pygame.display.update()
         config.frameRate.tick(30) # half the frames of game 30 vs 60
 
@@ -312,38 +317,18 @@ def result_screen():
     title_text = "MISSION FAILED"
     title_y = int(config.screen_height * 0.25)
     
-    # get the final score
-    final_score = config.score
-    
-    score_text = f"Score: {final_score}"
+    score_text = f"Score: {config.score}"
     score_y = int(config.screen_height * 0.45)
     
     instruction_text = "Press Space to return to menu"
     instruction_y = int(config.screen_height * 0.70)
-    
-    # background
-    result_bg = pygame.Surface((config.screen_width, config.screen_height))
-    result_bg.fill((20, 10, 20))
-    config.game_window.blit(result_bg, (0, 0))
-    
-    # draw title
-    title_surface = config.title_font.render(title_text, True, config.RED)
-    title_rect = title_surface.get_rect(center=(config.screen_width // 2, title_y))
-    config.game_window.blit(title_surface, title_rect)
-    
-    # draw score
-    score_surface = config.fontLarge.render(score_text, True, config.CAYAN)
-    score_rect = score_surface.get_rect(center=(config.screen_width // 2, score_y))
-    config.game_window.blit(score_surface, score_rect)
-    
-    # draw instruction
-    instruction_surface = config.fontLarge.render(instruction_text, True, config.WHITE)
-    instruction_rect = instruction_surface.get_rect(center=(config.screen_width // 2, instruction_y))
-    config.game_window.blit(instruction_surface, instruction_rect)
-    
-    pygame.display.flip()
-    
+
+    cursor = Cursor("img/cursor", frame_rate=120)
+    cursor.load_frames("img/cursor", scale_factor=1.5)
+
+    clock = pygame.time.Clock()
     waiting = True
+
     while waiting:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -351,6 +336,34 @@ def result_screen():
                 sys.exit()
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 waiting = False
+
+    
+        # background
+        result_bg = pygame.Surface((config.screen_width, config.screen_height))
+        result_bg.fill((20, 10, 20))
+        config.game_window.blit(result_bg, (0, 0))
+        
+        # draw title
+        title_surface = config.title_font.render(title_text, True, config.RED)
+        title_rect = title_surface.get_rect(center=(config.screen_width // 2, title_y))
+        config.game_window.blit(title_surface, title_rect)
+        
+        # draw score
+        score_surface = config.fontLarge.render(score_text, True, config.CAYAN)
+        score_rect = score_surface.get_rect(center=(config.screen_width // 2, score_y))
+        config.game_window.blit(score_surface, score_rect)
+        
+        # draw instruction
+        instruction_surface = config.fontLarge.render(instruction_text, True, config.WHITE)
+        instruction_rect = instruction_surface.get_rect(center=(config.screen_width // 2, instruction_y))
+        config.game_window.blit(instruction_surface, instruction_rect)
+
+        # update and draw cursor
+        cursor.update()
+        cursor.draw(config.game_window)
+    
+        pygame.display.flip()
+        clock.tick(60)
     
     return "menu"
 
