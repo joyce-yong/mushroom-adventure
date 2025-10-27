@@ -4,6 +4,8 @@ import sys
 import config
 
 from cursor import Cursor
+from vfx_galaxy import GalaxyBackground
+
 
 # ___ Menu Setup ___
 menu_images = []
@@ -41,6 +43,9 @@ def level_select():
     cursor = Cursor("img/cursor", frame_rate=120)
     cursor.load_frames("img/cursor", scale_factor=1.5)
 
+    galaxy = GalaxyBackground(config.screen_width, config.screen_height, num_stars=120)
+    clock = pygame.time.Clock()
+
     title_text = "SELECT LEVEL"
     title_y = int(config.screen_height * 0.15)
 
@@ -54,7 +59,15 @@ def level_select():
     x_start = (config.screen_width - total_width) // 2
 
     while in_select:
-        config.game_window.fill((12, 20, 40))
+        dt = clock.tick(60) / 1000.0
+        time_ms = pygame.time.get_ticks()
+
+        # --- draw sci-fi background ---
+        config.game_window.fill((10, 10, 25))  # base dark color
+        galaxy.update(dt, time_ms)
+        galaxy.draw(config.game_window, time_ms)
+        
+        # config.game_window.fill((12, 20, 40))
 
         title_surface = config.title_font.render(title_text, True, config.WHITE)
         title_rect = title_surface.get_rect(center=(config.screen_width // 2, title_y))
