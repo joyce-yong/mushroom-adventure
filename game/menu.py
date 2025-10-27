@@ -3,6 +3,7 @@ import pygame, os, sys, config, math, random
 from cursor import Cursor
 from vfx_galaxy import GalaxyBackground
 from vfx_transition import Transition
+from vfx_cybergrid import CyberGrid
 
 
 # ___ Menu Setup ___
@@ -225,18 +226,19 @@ def controls():
     showing = True
     cursor = Cursor("img/cursor", frame_rate=120)
     cursor.load_frames("img/cursor", scale_factor=1.5)
+    clock = pygame.time.Clock()
+    
+    grid_bg = CyberGrid(config.screen_width, config.screen_height, spacing=60) 
 
     title_text = "CONTROLS"
     title_y = int(config.screen_height * 0.15)
-
+    # ... (rest of variable setup)
     controls_start_y = int(config.screen_height * 0.35)
     line_height = 55
-
     actions_x = config.screen_width // 2 - 50
     inputs_x = config.screen_width // 2 + 50
-
     instruction_text = "Press ESC to return to menu"
-
+    
     actions = [
         "Move Player:",
         "Laser:",
@@ -253,32 +255,40 @@ def controls():
         "W Key",
         "Q Key"
     ]
-
+    
     while showing:
-        config.game_window.fill((10, 20, 40))
+        dt = clock.tick(60) / 1000.0 
+        
+        # Update the Background
+        config.game_window.fill((10, 20, 40)) # Base dark color
+        grid_bg.update(dt) # Update the pulse time
+        grid_bg.draw(config.game_window) # Draw the grid
 
+        # Draw UI Elements (Title, Text, etc.)
         title_surface = config.title_font.render(title_text, True, config.WHITE) 
         title_rect = title_surface.get_rect(center=(config.screen_width // 2, title_y))
         config.game_window.blit(title_surface, title_rect)
         
         for i, action_line in enumerate(actions):
-            y_pos = controls_start_y + i * line_height
+             y_pos = controls_start_y + i * line_height
 
-            # draw action (left column, left-aligned)
-            action_text = config.story_font.render(action_line, True, config.CAYAN)
-            action_rect = action_text.get_rect(topright=(actions_x, y_pos) )
-            config.game_window.blit(action_text, action_rect)
+             # draw action (left column, right-aligned)
+             action_text = config.story_font.render(action_line, True, config.CAYAN)
+             action_rect = action_text.get_rect(topright=(actions_x, y_pos) )
+             config.game_window.blit(action_text, action_rect)
 
-            # draw input (right column)
-            input_text = config.story_font.render(inputs[i], True, config.CAYAN)
-            input_rect = input_text.get_rect(topleft=(inputs_x, y_pos))
-            config.game_window.blit(input_text, input_rect)
+             # draw input (right column, left-aligned)
+             input_text = config.story_font.render(inputs[i], True, config.CAYAN)
+             input_rect = input_text.get_rect(topleft=(inputs_x, y_pos))
+             config.game_window.blit(input_text, input_rect)
 
         instruction_y = controls_start_y + len(actions) * line_height + 100
         instruction_surface = config.fontLarge.render(instruction_text, True, config.WHITE)
         instruction_rect = instruction_surface.get_rect(center=(config.screen_width // 2, instruction_y))
         config.game_window.blit(instruction_surface, instruction_rect)
 
+
+        # 3. Draw Cursor & Spores
         for spore in cursor.spores[:]:
             if not spore.update():
                 cursor.spores.remove(spore)
@@ -288,20 +298,18 @@ def controls():
         cursor.update()
         cursor.draw(config.game_window)
 
-        pygame.display.update()
-        config.frameRate.tick(30)
-
         pygame.display.flip()
         
+        # 4. Handle Events
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                showing = False
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                cursor.spawn_spores(pygame.mouse.get_pos())
-
+             if event.type == pygame.QUIT:
+                 pygame.quit()
+                 sys.exit()
+             elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                 showing = False
+             elif event.type == pygame.MOUSEBUTTONDOWN:
+                 cursor.spawn_spores(pygame.mouse.get_pos())
+                 
     return "menu"
 
 
