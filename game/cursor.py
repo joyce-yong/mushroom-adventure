@@ -1,6 +1,9 @@
 import pygame
 import os
 
+from spore_effect import Spore
+import random
+
 class Cursor:
     def __init__(self, folder_path="img/cursor", frame_rate=10):
         self.frames = []
@@ -8,6 +11,7 @@ class Cursor:
         self.current_frame = 0
         self.last_update = pygame.time.get_ticks()
         self.frame_rate = frame_rate
+        self.spores = []
 
         # hide the default system cursor
         pygame.mouse.set_visible(False)
@@ -25,6 +29,11 @@ class Cursor:
 
         if not self.frames:
             print("Warning: No cursor images found in", folder_path)
+
+    def spawn_spores(self, pos):
+        """Create multiple spores at the cursor position."""
+        for _ in range(random.randint(10, 20)):
+            self.spores.append(Spore(pos[0], pos[1]))
 
     def update(self):
         """Update cursor animation."""

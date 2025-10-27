@@ -78,6 +78,14 @@ def level_select():
                 sys.exit()
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 return "menu"
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                cursor.spawn_spores(pygame.mouse.get_pos())
+            
+        for spore in cursor.spores[:]:
+            if not spore.update():
+                cursor.spores.remove(spore)
+            else:
+                spore.draw(config.game_window)
             
         cursor.update()
         cursor.draw(config.game_window)
@@ -137,6 +145,8 @@ def show_story():
                 sys.exit()
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 showing_story = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                cursor.spawn_spores(pygame.mouse.get_pos())
 
         # typing effect
         if current_line < len(story_text):
@@ -160,6 +170,12 @@ def show_story():
             config.game_window.blit(typing_surface, typing_rect)
 
         config.game_window.blit(instruction_surface, instruction_rect)
+
+        for spore in cursor.spores[:]:
+            if not spore.update():
+                cursor.spores.remove(spore)
+            else:
+                spore.draw(config.game_window)
 
         cursor.update()
         cursor.draw(config.game_window)
@@ -229,6 +245,12 @@ def controls():
         instruction_rect = instruction_surface.get_rect(center=(config.screen_width // 2, instruction_y))
         config.game_window.blit(instruction_surface, instruction_rect)
 
+        for spore in cursor.spores[:]:
+            if not spore.update():
+                cursor.spores.remove(spore)
+            else:
+                spore.draw(config.game_window)
+
         cursor.update()
         cursor.draw(config.game_window)
 
@@ -243,6 +265,8 @@ def controls():
                 sys.exit()
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 showing = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                cursor.spawn_spores(pygame.mouse.get_pos())
 
     return "menu"
 
@@ -303,6 +327,14 @@ def menu_screen():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                cursor.spawn_spores(pygame.mouse.get_pos())
+
+        for spore in cursor.spores[:]:
+            if not spore.update():
+                cursor.spores.remove(spore)
+            else:
+                spore.draw(config.game_window)
 
         cursor.update()
         cursor.draw(config.game_window)
@@ -342,6 +374,8 @@ def result_screen():
                 sys.exit()
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 waiting = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                cursor.spawn_spores(pygame.mouse.get_pos())
 
     
         # background
@@ -365,6 +399,12 @@ def result_screen():
         config.game_window.blit(instruction_surface, instruction_rect)
 
         # update and draw cursor
+        for spore in cursor.spores[:]:
+            if not spore.update():
+                cursor.spores.remove(spore)
+            else:
+                spore.draw(config.game_window)
+        
         cursor.update()
         cursor.draw(config.game_window)
     
