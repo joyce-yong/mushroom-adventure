@@ -89,19 +89,47 @@ def level_select():
         #     pygame.time.delay(300)
         #     return 2
 
+        # if level1_pressed:
+        #     click_pos = (x_start + button_width/2, y_pos)
+        #     galaxy.spawn_ripple(click_pos)
+        #     trans = Transition(config.game_window)
+        #     trans.warp_out(click_pos)
+        #     return 1
+
+        # if level2_pressed:
+        #     click_pos = (x_start + button_width/2 + button_width + gap, y_pos)
+        #     galaxy.spawn_ripple(click_pos)
+        #     trans = Transition(config.game_window)
+        #     trans.warp_out(click_pos)
+        #     return 2
+
         if level1_pressed:
             click_pos = (x_start + button_width/2, y_pos)
             galaxy.spawn_ripple(click_pos)
             trans = Transition(config.game_window)
-            trans.warp_out(click_pos)
-            return 1
+            
+            # Non-blocking transition loop
+            while trans.warp_out(click_pos): 
+                config.game_window.fill((10, 10, 25))
+                galaxy.draw(config.game_window, time_ms)
+                trans.draw() # Draw the transition frame
+                pygame.display.flip()
+                clock.tick(60) # High framerate for smoothness
+            return 1 # Return only after transition finishes
 
         if level2_pressed:
             click_pos = (x_start + button_width/2 + button_width + gap, y_pos)
             galaxy.spawn_ripple(click_pos)
             trans = Transition(config.game_window)
-            trans.warp_out(click_pos)
-            return 2
+
+            # Non-blocking transition loop
+            while trans.warp_out(click_pos):
+                config.game_window.fill((10, 10, 25))
+                galaxy.draw(config.game_window, time_ms)
+                trans.draw() # Draw the transition frame
+                pygame.display.flip()
+                clock.tick(60)
+            return 2 # Return only after transition finishes
 
         
         for event in pygame.event.get():

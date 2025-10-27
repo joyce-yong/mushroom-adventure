@@ -410,6 +410,7 @@ def start_game(level_number=2):
 
 
 # # Main Loop Controller
+transition = None #
 game_state = "menu"
 current_level = 2
 
@@ -422,16 +423,41 @@ while game_state != "exit":
         game_state = start_game(current_level)
     elif game_state == "level_select":
         selected_level = menu.level_select()
-        # if isinstance(selected_level, int):
-        #     current_level = selected_level
-        #     game_state = "play"
         if isinstance(selected_level, int):
-            transition = Transition(config.game_window)
-            transition.warp_in()
             current_level = selected_level
-            game_state = "play"
+            # Initialize the transition object
+            transition = Transition(config.game_window)
+            # Switch to the new state to run the warp-in
+            game_state = "transition_in" 
         elif selected_level == "menu":
             game_state = "menu"
+    
+    # --- NEW TRANSITION IN STATE ---
+    elif game_state == "transition_in":
+        # Get level config needed for background draw
+        level_config = get_level_config(current_level)
+        level_background_list = load_background_images(level_config)
+
+        # Update the transition (runs one frame of the warp-in animation)
+        is_running = transition.warp_in()
+        
+        # Redraw the initial game scene frame
+        config.game_window.fill(config.BLACK)
+        draw_scrolling_bg(config.game_window, level_background_list, config.scroll_state, speed=0)
+        
+        # Draw the transition effect over the game scene
+        transition.draw()
+        
+        pygame.display.update()
+        config.frameRate.tick(config.FPS)
+        
+        if not is_running:
+            # Transition finished, start the game loop!
+            game_state = "play"
+            transition = None # Cleanup
+            
+    # ------------------------------
+    
     elif game_state == "result_screen":
         game_state = menu.result_screen()
 
