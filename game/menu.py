@@ -75,16 +75,11 @@ def level_select():
         config.game_window.blit(title_surface, title_rect)
 
         x_offset = x_start + (button_width / 2)
-
-        # level1_pressed = draw_button("Level 1", x_offset, y_pos, config.WHITE, config.CAYAN)
+        
+        
         float_offset = int(math.sin(time_ms * 0.002) * 10)  # smooth float motion
         level1_pressed = draw_button("Level 1", x_offset, y_pos + float_offset, config.WHITE, config.CAYAN)
         x_offset += button_width + gap
-        
-        
-
-
-        #level2_pressed = draw_button("Level 2", x_offset, y_pos, config.WHITE, config.CAYAN)
         level2_pressed = draw_button("Level 2", x_offset, y_pos + float_offset, config.WHITE, config.CAYAN)
 
 
