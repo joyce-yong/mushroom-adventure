@@ -101,6 +101,7 @@ def start_game(level_number=2):
     # Get level configuration
     level_config = get_level_config(level_number)
     print(f"Starting {level_config['name']}")
+    config.target_score = level_config.get('target_score', 0)
     
     # Load background
     level_background_list = load_background_images(level_config)
@@ -303,7 +304,7 @@ def start_game(level_number=2):
         shield_bar.draw(player.shield, shield=True)
         menu.drawText(f'Shield:', config.font, config.WHITE, 10, 810)
         # score
-        menu.drawText(f'Score: {config.score}', config.font, config.WHITE, 10, 830)
+        menu.drawText(f'Score: {config.score} / {config.target_score}', config.font, config.WHITE, 10, 830)
         # wave count
         menu.drawText(f'Waves: {wave_count}', config.font, config.RED, 10, 870)
 

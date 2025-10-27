@@ -314,10 +314,16 @@ def menu_screen():
 
 # ___ Result screen ___
 def result_screen():
-    title_text = "MISSION FAILED"
+    if config.score >= getattr(config, 'target_score', 0):
+        title_text = "MISSION COMPLETED"
+        title_color = config.CAYAN
+    else:
+        title_text = "MISSION FAILED"
+        title_color = config.RED
+
     title_y = int(config.screen_height * 0.25)
     
-    score_text = f"Score: {config.score}"
+    score_text = f"Score: {config.score} / {getattr(config, 'target_score', 0)}"
     score_y = int(config.screen_height * 0.45)
     
     instruction_text = "Press Space to return to menu"
@@ -344,12 +350,12 @@ def result_screen():
         config.game_window.blit(result_bg, (0, 0))
         
         # draw title
-        title_surface = config.title_font.render(title_text, True, config.RED)
+        title_surface = config.title_font.render(title_text, True, title_color)
         title_rect = title_surface.get_rect(center=(config.screen_width // 2, title_y))
         config.game_window.blit(title_surface, title_rect)
         
         # draw score
-        score_surface = config.fontLarge.render(score_text, True, config.CAYAN)
+        score_surface = config.score_fontLarge.render(score_text, True, config.PURPLE)
         score_rect = score_surface.get_rect(center=(config.screen_width // 2, score_y))
         config.game_window.blit(score_surface, score_rect)
         

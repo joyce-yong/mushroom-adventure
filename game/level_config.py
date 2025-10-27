@@ -33,6 +33,9 @@ LEVELS = {
         
         # wave configuration
         'wave_size_multiplier': 1,
+
+        # target score
+        'target_score': 500,
     },
     
     2: {
@@ -70,6 +73,9 @@ LEVELS = {
         
         # wave configuration
         'wave_size_multiplier': 1,
+
+        # target score
+        'target_score': 1000,
     }
 }
 

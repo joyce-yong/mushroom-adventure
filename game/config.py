@@ -32,6 +32,7 @@ if os.path.exists(FONT_PATH):
     button_font = pygame.font.Font(FONT_PATH, 68)
     title_font = pygame.font.Font(FONT_PATH, 90)
     story_font = pygame.font.Font(FONT_PATH, 45)
+    score_fontLarge = pygame.font.Font(FONT_PATH, 130)
     font = pygame.font.Font(FONT_PATH, 25)
     fontLarge = pygame.font.Font(FONT_PATH, 40)
 else:
@@ -39,6 +40,7 @@ else:
     button_font = pygame.font.SysFont(None, 65)
     title_font = pygame.font.SysFont(None, 90)
     story_font = pygame.font.SysFont(None, 45)
+    score_fontLarge = pygame.font.SysFont(None, 130)
     font = pygame.font.SysFont(None, 25)
     fontLarge = pygame.font.SysFont(None, 40)
 
@@ -49,6 +51,7 @@ WHITE = (255, 255, 255)
 CAYAN = (0, 255, 255)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
+PURPLE = (233, 125, 255)
 
 
 # action state var
@@ -101,6 +104,7 @@ long_strike_sound_played = False
 
 # Stats
 score = 0
+target_score = 0
 # Dictionaries
 
 # enemy deat rewards
