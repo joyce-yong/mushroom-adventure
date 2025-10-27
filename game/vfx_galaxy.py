@@ -1,56 +1,5 @@
 import pygame, random, math
 
-# --- Color helper ---
-def lerp_color(c1, c2, t):
-    return tuple(int(c1[i] + (c2[i] - c1[i]) * t) for i in range(3))
-
-# --- Galaxy Text Drawer ---
-def draw_galaxy_text(surface, text, font, center, time_ms, base_color1=(255, 230, 100), base_color2=(255, 180, 50)):
-    # Animate color shimmer
-    t = (math.sin(time_ms * 0.002) + 1) / 2
-    color = lerp_color(base_color1, base_color2, t)
-
-    # Draw glowing aura
-    glow_surface = pygame.Surface(surface.get_size(), pygame.SRCALPHA)
-    for i in range(4):
-        alpha = 60 - i * 12
-        radius = 2 + i * 2
-        glow_text = font.render(text, True, color)
-        glow_text.set_alpha(alpha)
-        pos = (center[0] - glow_text.get_width() // 2, center[1] - glow_text.get_height() // 2)
-        glow_surface.blit(glow_text, (pos[0] - radius, pos[1]))
-        glow_surface.blit(glow_text, (pos[0] + radius, pos[1]))
-        glow_surface.blit(glow_text, (pos[0], pos[1] - radius))
-        glow_surface.blit(glow_text, (pos[0], pos[1] + radius))
-    surface.blit(glow_surface, (0, 0), special_flags=pygame.BLEND_ADD)
-
-    # Draw main text (crisp)
-    text_surface = font.render(text, True, color)
-    text_rect = text_surface.get_rect(center=center)
-    surface.blit(text_surface, text_rect)
-
-    # Add sparkle VFX
-    if random.random() < 0.05:
-        sparkle_list.append({
-            "x": center[0] + random.randint(-80, 80),
-            "y": center[1] + random.randint(-30, 30),
-            "radius": random.randint(1, 3),
-            "life": 255
-        })
-
-def update_sparkles(surface):
-    for s in sparkle_list[:]:
-        s["life"] -= 6
-        s["y"] -= 0.2
-        if s["life"] <= 0:
-            sparkle_list.remove(s)
-            continue
-        alpha = max(0, min(255, s["life"]))
-        pygame.draw.circle(surface, (255, 255, 150, alpha), (int(s["x"]), int(s["y"])), s["radius"])
-
-# store sparkle particles
-sparkle_list = []
-
 # === Star Object (with parallax + color by depth) ===
 class Star:
     def __init__(self, width, height, depth):
