@@ -2,6 +2,7 @@ import pygame # type: ignore
 import os
 import sys
 import config
+import math
 
 from cursor import Cursor
 from vfx_galaxy import GalaxyBackground
@@ -46,6 +47,7 @@ def level_select():
     galaxy = GalaxyBackground(config.screen_width, config.screen_height, num_stars=120)
     clock = pygame.time.Clock()
 
+
     title_text = "SELECT LEVEL"
     title_y = int(config.screen_height * 0.15)
 
@@ -67,7 +69,6 @@ def level_select():
         galaxy.update(dt, time_ms)
         galaxy.draw(config.game_window, time_ms)
         
-        # config.game_window.fill((12, 20, 40))
 
         title_surface = config.title_font.render(title_text, True, config.WHITE)
         title_rect = title_surface.get_rect(center=(config.screen_width // 2, title_y))
@@ -75,14 +76,25 @@ def level_select():
 
         x_offset = x_start + (button_width / 2)
 
-        level1_pressed = draw_button("Level 1", x_offset, y_pos, config.WHITE, config.CAYAN)
+        # level1_pressed = draw_button("Level 1", x_offset, y_pos, config.WHITE, config.CAYAN)
+        float_offset = int(math.sin(time_ms * 0.002) * 10)  # smooth float motion
+        level1_pressed = draw_button("Level 1", x_offset, y_pos + float_offset, config.WHITE, config.CAYAN)
         x_offset += button_width + gap
+        
+        
 
-        level2_pressed = draw_button("Level 2", x_offset, y_pos, config.WHITE, config.CAYAN)
+
+        #level2_pressed = draw_button("Level 2", x_offset, y_pos, config.WHITE, config.CAYAN)
+        level2_pressed = draw_button("Level 2", x_offset, y_pos + float_offset, config.WHITE, config.CAYAN)
+
 
         if level1_pressed:
+            galaxy.spawn_ripple((x_start + button_width/2, y_pos))
+            pygame.time.delay(300)
             return 1
         if level2_pressed:
+            galaxy.spawn_ripple((x_start + button_width/2 + button_width + gap, y_pos))
+            pygame.time.delay(300)
             return 2
         
         for event in pygame.event.get():
