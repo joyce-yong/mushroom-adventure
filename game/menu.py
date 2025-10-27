@@ -79,57 +79,31 @@ def level_select():
         x_offset += button_width + gap
         level2_pressed = draw_button("Level 2", x_offset, y_pos + float_offset, config.WHITE, config.CAYAN)
 
-
-        # if level1_pressed:
-        #     galaxy.spawn_ripple((x_start + button_width/2, y_pos))
-        #     pygame.time.delay(300)
-        #     return 1
-        # if level2_pressed:
-        #     galaxy.spawn_ripple((x_start + button_width/2 + button_width + gap, y_pos))
-        #     pygame.time.delay(300)
-        #     return 2
-
-        # if level1_pressed:
-        #     click_pos = (x_start + button_width/2, y_pos)
-        #     galaxy.spawn_ripple(click_pos)
-        #     trans = Transition(config.game_window)
-        #     trans.warp_out(click_pos)
-        #     return 1
-
-        # if level2_pressed:
-        #     click_pos = (x_start + button_width/2 + button_width + gap, y_pos)
-        #     galaxy.spawn_ripple(click_pos)
-        #     trans = Transition(config.game_window)
-        #     trans.warp_out(click_pos)
-        #     return 2
-
         if level1_pressed:
             click_pos = (x_start + button_width/2, y_pos)
             galaxy.spawn_ripple(click_pos)
             trans = Transition(config.game_window)
             
-            # Non-blocking transition loop
             while trans.warp_out(click_pos): 
                 config.game_window.fill((10, 10, 25))
                 galaxy.draw(config.game_window, time_ms)
-                trans.draw() # Draw the transition frame
+                trans.draw() 
                 pygame.display.flip()
-                clock.tick(60) # High framerate for smoothness
-            return 1 # Return only after transition finishes
+                clock.tick(60)
+            return 1 
 
         if level2_pressed:
             click_pos = (x_start + button_width/2 + button_width + gap, y_pos)
             galaxy.spawn_ripple(click_pos)
             trans = Transition(config.game_window)
 
-            # Non-blocking transition loop
             while trans.warp_out(click_pos):
                 config.game_window.fill((10, 10, 25))
                 galaxy.draw(config.game_window, time_ms)
-                trans.draw() # Draw the transition frame
+                trans.draw() 
                 pygame.display.flip()
                 clock.tick(60)
-            return 2 # Return only after transition finishes
+            return 2 
 
         
         for event in pygame.event.get():
