@@ -28,9 +28,7 @@ LEVELS = {
         
         # background
         'background_files': [
-            'img/background/sd1.png',
-            'img/background/sd2.png',
-            'img/background/sd3.png'
+            'img/background/space.png'
         ],
         
         # wave configuration
