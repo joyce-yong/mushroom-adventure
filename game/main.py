@@ -21,7 +21,7 @@ from sprite_groups import (
     enemy_lasers,
     plasma_group)
 from level_config import get_level_config, load_background_images
-
+from vfx_transition import Transition
 
 
 # music for game
@@ -422,7 +422,12 @@ while game_state != "exit":
         game_state = start_game(current_level)
     elif game_state == "level_select":
         selected_level = menu.level_select()
+        # if isinstance(selected_level, int):
+        #     current_level = selected_level
+        #     game_state = "play"
         if isinstance(selected_level, int):
+            transition = Transition(config.game_window)
+            transition.warp_in()
             current_level = selected_level
             game_state = "play"
         elif selected_level == "menu":

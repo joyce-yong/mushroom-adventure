@@ -1,11 +1,8 @@
-import pygame # type: ignore
-import os
-import sys
-import config
-import math
+import pygame, os, sys, config, math, random
 
 from cursor import Cursor
 from vfx_galaxy import GalaxyBackground
+from vfx_transition import Transition
 
 
 # ___ Menu Setup ___
@@ -83,14 +80,29 @@ def level_select():
         level2_pressed = draw_button("Level 2", x_offset, y_pos + float_offset, config.WHITE, config.CAYAN)
 
 
+        # if level1_pressed:
+        #     galaxy.spawn_ripple((x_start + button_width/2, y_pos))
+        #     pygame.time.delay(300)
+        #     return 1
+        # if level2_pressed:
+        #     galaxy.spawn_ripple((x_start + button_width/2 + button_width + gap, y_pos))
+        #     pygame.time.delay(300)
+        #     return 2
+
         if level1_pressed:
-            galaxy.spawn_ripple((x_start + button_width/2, y_pos))
-            pygame.time.delay(300)
+            click_pos = (x_start + button_width/2, y_pos)
+            galaxy.spawn_ripple(click_pos)
+            trans = Transition(config.game_window)
+            trans.warp_out(click_pos)
             return 1
+
         if level2_pressed:
-            galaxy.spawn_ripple((x_start + button_width/2 + button_width + gap, y_pos))
-            pygame.time.delay(300)
+            click_pos = (x_start + button_width/2 + button_width + gap, y_pos)
+            galaxy.spawn_ripple(click_pos)
+            trans = Transition(config.game_window)
+            trans.warp_out(click_pos)
             return 2
+
         
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
