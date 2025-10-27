@@ -36,6 +36,19 @@ def draw_button(text, x_center, y_pos, base_color=config.WHITE, hover_color=conf
     
     return False
 
+# helper function to load and scale the background image (result screen)
+def load_result_bg(filename):
+    path = os.path.join('img', 'result', filename) 
+    try:
+        image = pygame.image.load(path).convert()
+        return pygame.transform.scale(image, (config.screen_width, config.screen_height))
+    except pygame.error as e:
+        print(f"Error loading result background image '{filename}': {e}")
+        fallback = pygame.Surface((config.screen_width, config.screen_height))
+        fallback.fill(config.BLACK)
+        return fallback
+
+
 
 # ___ Level select screen ___
 def level_select():
@@ -395,12 +408,16 @@ def menu_screen():
 
 # ___ Result screen ___
 def result_screen():
-    if config.score >= getattr(config, 'target_score', 0):
+    is_win = config.score >= getattr(config, 'target_score', 0)
+
+    if is_win:
         title_text = "MISSION COMPLETED"
         title_color = config.CAYAN
+        background_image = load_result_bg('win.png')
     else:
         title_text = "MISSION FAILED"
         title_color = config.RED
+        background_image = load_result_bg('lose.png')
 
     title_y = int(config.screen_height * 0.25)
     
@@ -417,20 +434,8 @@ def result_screen():
     waiting = True
 
     while waiting:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                waiting = False
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                cursor.spawn_spores(pygame.mouse.get_pos())
-
-    
         # background
-        result_bg = pygame.Surface((config.screen_width, config.screen_height))
-        result_bg.fill((20, 10, 20))
-        config.game_window.blit(result_bg, (0, 0))
+        config.game_window.blit(background_image, (0, 0))
         
         # draw title
         title_surface = config.title_font.render(title_text, True, title_color)
@@ -447,6 +452,12 @@ def result_screen():
         instruction_rect = instruction_surface.get_rect(center=(config.screen_width // 2, instruction_y))
         config.game_window.blit(instruction_surface, instruction_rect)
 
+        # *** PLACEHOLDER FOR YOUR VFX IMPLEMENTATION ***
+        # if is_win:
+        #     draw_mission_completed_vfx(title_rect) # Function to draw light bloom, sparkles, etc.
+        # else:
+        #     draw_mission_failed_vfx() # Function to draw red haze, vignette, etc.
+
         # update and draw cursor
         for spore in cursor.spores[:]:
             if not spore.update():
@@ -456,6 +467,15 @@ def result_screen():
         
         cursor.update()
         cursor.draw(config.game_window)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                waiting = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                cursor.spawn_spores(pygame.mouse.get_pos())
     
         pygame.display.flip()
         clock.tick(60)
