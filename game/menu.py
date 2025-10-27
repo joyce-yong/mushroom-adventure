@@ -4,6 +4,7 @@ from cursor import Cursor
 from vfx_galaxy import GalaxyBackground
 from vfx_transition import Transition
 from vfx_cybergrid import CyberGrid
+from vfx_bionebula import BioNebula
 
 
 # ___ Menu Setup ___
@@ -131,8 +132,10 @@ def level_select():
 
 # ___ Story screen ___
 def show_story():
-    story_bg = pygame.Surface((config.screen_width, config.screen_height))
-    story_bg.fill((12, 20, 40))
+    # story_bg = pygame.Surface((config.screen_width, config.screen_height))
+    # story_bg.fill((12, 20, 40))
+    nebula = BioNebula(config.screen_width, config.screen_height, num_spores=80)
+
 
     title_font = config.title_font
     story_font = config.story_font
@@ -171,7 +174,11 @@ def show_story():
 
     showing_story = True
     while showing_story:
-        config.game_window.blit(story_bg, (0, 0))
+        # config.game_window.blit(story_bg, (0, 0))
+        dt = clock.tick(60) / 1000.0
+        nebula.update(dt)
+        nebula.draw(config.game_window)
+
         config.game_window.blit(title_surface, title_rect)
 
         for event in pygame.event.get():

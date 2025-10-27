@@ -44,14 +44,14 @@ class CyberGrid:
         for x in range(0, self.screen_width, self.spacing):
             # To apply the vertical trail effect, we must draw two segments for each line
             
-            # 1. Draw the "Scanned" portion (within the vertical trail zone)
+            # Draw the "Scanned" portion (within the vertical trail zone)
             start_y = max(0, scan_trail_start)
             end_y = min(self.screen_height, scan_trail_end)
             
             if end_y > start_y:
                 pygame.draw.line(surface, pulsing_trail_color, (x, start_y), (x, end_y), self.line_thickness)
 
-            # 2. Draw the "Unscanned" portion (Above and below the trail)
+            # Draw the "Unscanned" portion (Above and below the trail)
             # Above the trail
             if start_y > 0:
                 pygame.draw.line(surface, pulsing_base_color, (x, 0), (x, start_y), self.line_thickness)
@@ -109,4 +109,4 @@ class CyberGrid:
         self._draw_data_noise(surface)
 
         # 4. Draw Scan Line (White line for strong contrast)
-        self._draw_scan_line(surface, line_color=(242, 0, 137, 180)) # Now a bright, almost opaque white
+        self._draw_scan_line(surface, line_color=(242, 0, 137, 180)) 
