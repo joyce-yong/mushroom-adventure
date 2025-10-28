@@ -10,7 +10,7 @@ from vfx_glowparticle import GlowParticle
 from vfx_buttonglow import ButtonGlowVFX
 
 from vfx_sparkle import SparkleVFX
-
+from vfx_haze import GradientHaze
 
 # ___ Menu Setup ___
 menu_images = []
@@ -482,6 +482,7 @@ def menu_screen():
 def result_screen():
     is_win = config.score >= getattr(config, 'target_score', 0)
 
+    haze_vfx = None
     sparkle_vfx = None
 
     if is_win:
@@ -489,6 +490,15 @@ def result_screen():
         title_color = config.CAYAN
         background_image = load_result_bg('win.png')
 
+        # initialize haze vfx
+        haze_vfx = GradientHaze( 
+            config.screen_width, 
+            config.screen_height, 
+            start_color = (255, 225, 161), # bright yellow
+            end_color = (0, 0, 0),         # black
+            max_alpha = 120,
+            fade_speed = 0.002
+        )
         # initialize sparkle vfx
         sparkle_vfx = SparkleVFX(
             config.screen_width, 
@@ -501,6 +511,16 @@ def result_screen():
         title_text = "MISSION FAILED"
         title_color = config.RED
         background_image = load_result_bg('lose.png')
+
+        # initialize haze vfx
+        haze_vfx = GradientHaze( 
+            config.screen_width, 
+            config.screen_height, 
+            start_color = (150, 10, 10), # dark red
+            end_color = (0, 0, 0),       # black
+            max_alpha = 120,
+            fade_speed = 0.002
+        )
 
     title_y = int(config.screen_height * 0.20)
     
@@ -526,6 +546,10 @@ def result_screen():
         if sparkle_vfx:
             sparkle_vfx.update(dt)
             sparkle_vfx.draw(config.game_window)
+
+        if haze_vfx:
+            haze_vfx.update(dt)
+            haze_vfx.draw(config.game_window)
         
         # draw title
         title_surface = config.title_font.render(title_text, True, title_color)
