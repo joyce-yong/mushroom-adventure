@@ -124,10 +124,10 @@ def start_game(level_number=2):
 
     star_vfx = FastStarVFX(config.SCREEN_WIDTH, config.SCREEN_HEIGHT)
 
-    initial_comet_count = 3
+    initial_comet_count = 1
     global comets, comet_spawn_timer
     comets = [Comet(config.SCREEN_WIDTH, config.SCREEN_HEIGHT) for _ in range(initial_comet_count)]
-    comet_spawn_interval = 240 # Frames (4 seconds at 60 FPS)
+    comet_spawn_interval = 240 
     comet_spawn_timer = 0
     
     # Load background
@@ -219,7 +219,7 @@ def start_game(level_number=2):
             
         # Update & draw comets
         for comet in comets:
-            comet.update()
+            comet.update(scroll_speed)
             comet.draw(config.game_window)
 
         is_moving = config.moving_left or config.moving_right or config.moving_up or config.moving_down
