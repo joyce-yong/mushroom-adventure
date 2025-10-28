@@ -23,6 +23,7 @@ from sprite_groups import (
 from level_config import get_level_config, load_background_images
 from vfx_transition import Transition
 from vfx_level1_star import FastStarVFX
+from vfx_player_thruster import ThrusterVFX
 
 # music for game
 def play_music(song_path):
@@ -139,6 +140,7 @@ def start_game(level_number=2):
     # --- Create fresh player & UI objects for this run ---
     # create player object
     player = characterClass.Character('player', 950, 750, 2, 10)
+    thruster_vfx = ThrusterVFX(player)
 
     # ensure player's projectile container is a Group and linked
     player.lasers = player_lasers
@@ -164,6 +166,7 @@ def start_game(level_number=2):
 
     # Game state variables
     playing = True
+    scroll_speed = 2
     scroll_y = 0 # background y scroll
     wave_count = 1
     pending_spawns = 0 # track how many enemies are left in current wave
@@ -189,6 +192,9 @@ def start_game(level_number=2):
         # 2. Update and Draw the new Fast Star VFX (ADD/REPLACE OLD LOGIC WITH THIS)
         star_vfx.update()
         star_vfx.draw(config.game_window)
+
+        is_moving = config.moving_left or config.moving_right or config.moving_up or config.moving_down
+        thruster_vfx.update(is_moving, scroll_speed)
 
         # black Hole and Quark star (only if enabled for this level)
         if level_config['blackholes_enabled'] and random.random() < 0.00125:
@@ -299,13 +305,12 @@ def start_game(level_number=2):
                 asteroid_group=asteroid_group
             )
 
-
-
         # check for death after blackhole updates (blackholes can instantly kill player)
         if player.health <= 0:
             print("You died, health is: ", player.health, ", with a score of:", config.score)
             return "result_screen"
         
+        thruster_vfx.draw(config.game_window)
         
         player.draw()
         player.update(player)
