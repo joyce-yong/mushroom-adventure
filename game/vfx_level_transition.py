@@ -20,13 +20,18 @@ class LevelTransition: # Renamed from Transition to LevelTransition as per your 
         self.overlay = pygame.Surface(surface.get_size(), pygame.SRCALPHA) # Use SRCALPHA for transparency
         self.overlay.fill((0,0,0,0)) # Start fully transparent
         
-        self.fade_speed = 3 # Control speed here (lower for longer, smoother)
+        self.fade_speed = 4 # Control speed here (lower for longer, smoother)
 
         # --- NEW: Parameters for streaky/warp effect ---
         self.num_streaks = 100 # Number of streaks
         self.streaks = []
         self.streak_speed_factor = 1.5 # How much faster streaks move than alpha fade
         self.initialize_streaks()
+
+    def reset_to_max(self):
+        """Prepares the transition object for a fade-in (warp_in) sequence."""
+        self.current_alpha = self.max_alpha
+        self.is_running = True
 
     def initialize_streaks(self):
         # Create random streak properties
@@ -85,4 +90,15 @@ class LevelTransition: # Renamed from Transition to LevelTransition as per your 
             self.surface.blit(self.overlay, (0, 0))
 
     def warp_in(self):
-        pass
+        if not self.is_running:
+            return False
+            
+        self.current_alpha -= self.fade_speed # <--- CHANGE 2: Decrease alpha (fade in)
+        
+        if self.current_alpha <= 0:
+            self.current_alpha = 0
+            self.is_running = False
+            
+        # Update streaks just like warp_out, but now they are moving AWAY
+        self.update_streaks() 
+        return self.is_running

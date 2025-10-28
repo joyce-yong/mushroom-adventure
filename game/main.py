@@ -540,6 +540,19 @@ while game_state != "exit":
         pygame.display.update()
         
         if not is_running:
+            transition.reset_to_max() 
+            game_state = "result_transition_in"
+    
+    elif game_state == "result_transition_in":
+        config.frameRate.tick(config.FPS)
+        
+        config.game_window.fill(config.BLACK) 
+        is_running = transition.warp_in()
+        transition.draw()
+        
+        pygame.display.update()
+        
+        if not is_running:
             transition = None
             game_state = "result_screen"
             
