@@ -6,6 +6,8 @@ from vfx_transition import Transition
 from vfx_cybergrid import CyberGrid
 from vfx_bionebula import BioNebula
 from vfx_cometstar import CometStarVFX
+from vfx_glowparticle import GlowParticle
+from vfx_buttonglow import ButtonGlowVFX
 
 
 # ___ Menu Setup ___
@@ -31,11 +33,12 @@ def draw_button(text, x_center, y_pos, base_color=config.WHITE, hover_color=conf
     
     config.game_window.blit(final_text_surface, final_text_rect)
 
+    is_clicked = False
     if is_hovered and click[0] == 1:
-        pygame.time.delay(200) 
-        return True
-    
-    return False
+        # pygame.time.delay(200)
+        is_clicked = True # 
+
+    return is_clicked, is_hovered
 
 # helper function to load and scale the background image (result screen)
 def load_result_bg(filename):
@@ -91,9 +94,9 @@ def level_select():
         
         
         float_offset = int(math.sin(time_ms * 0.002) * 10)  # smooth float motion
-        level1_pressed = draw_button("Level 1", x_offset, y_pos + float_offset, config.WHITE, config.CAYAN)
+        level1_pressed, level1_hovered = draw_button("Level 1", x_offset, y_pos + float_offset, config.WHITE, config.CAYAN)
         x_offset += button_width + gap
-        level2_pressed = draw_button("Level 2", x_offset, y_pos + float_offset, config.WHITE, config.CAYAN)
+        level2_pressed, level2_hovered = draw_button("Level 2", x_offset, y_pos + float_offset, config.WHITE, config.CAYAN)
 
         if level1_pressed:
             click_pos = (x_start + button_width/2, y_pos)
@@ -335,9 +338,6 @@ def controls():
 
 
 # ___ Menu screen ___
-# ... (inside menu.py)
-
-# ___ Menu screen ___
 def menu_screen():
     in_menu = True
     global is_paused
@@ -349,8 +349,12 @@ def menu_screen():
     cursor = Cursor("img/cursor", frame_rate=120)
     cursor.load_frames("img/cursor", scale_factor=1.5)
 
-    # --- INITIALIZE THE NEW VFX CLASS ---
+    # Initialize all VFX systems
     comet_vfx = CometStarVFX(config.screen_width, config.screen_height, num_comets=8)
+    button_vfx = ButtonGlowVFX()
+
+    # Initialize button_positions to fix UnboundLocalError
+    button_positions = {} 
 
     while in_menu:
         now = pygame.time.get_ticks()
@@ -362,48 +366,83 @@ def menu_screen():
         time_ms = pygame.time.get_ticks()
         float_offset = int(math.sin(time_ms * 0.003) * 5)
         
-        # 1. Draw current menu image (THE BACKGROUND)
+        # 1. DRAW BACKGROUND LAYERS
         config.game_window.blit(menu_images[idx], (0, 0))
 
         # 2. Draw Semi-transparent overlay for trailing blur effect
-        #    NOTE: This darkens the screen, which helps the light effects pop.
         overlay = pygame.Surface((config.screen_width, config.screen_height))
         overlay.fill((10, 10, 25))
         overlay.set_alpha(40) 
         config.game_window.blit(overlay, (0, 0))
 
-        # 3. --- UPDATE & DRAW VFX (THE FOREGROUND) ---
+        # 3. Draw comet/star VFX (Background animation)
         comet_vfx.update()
         comet_vfx.draw(config.game_window)
-        # -------------------------------------------
-        
-        # draw buttons (Buttons go on top of the VFX for clear interaction)
-        num_buttons = 4
-        base_y_pos = int(config.screen_height * 0.80) # Store the base Y-position
 
+        
+        # --- BUTTON LOGIC AND GLOW LAYER SETUP ---
+        
+        # A. CALCULATE & STORE BUTTON POSITIONS (Needed before drawing the glow)
+        num_buttons = 4
+        base_y_pos = int(config.screen_height * 0.80) 
         total_width = int(config.screen_width * 0.75)
         x_spacing = total_width // (num_buttons - 1) if num_buttons > 1 else 0
         x_start = int(config.screen_width - total_width) // 2
+        
+        button_positions = {} # Reset for the current frame
         x_offset = x_start
         
+        # Store Start position
+        button_positions["Start"] = (x_offset, base_y_pos + float_offset)
+        x_offset += x_spacing
+
+        # Store Story position
+        story_offset = int(math.sin(time_ms * 0.003 + 0.5) * 5)
+        button_positions["Story"] = (x_offset, base_y_pos + story_offset)
+        x_offset += x_spacing
+
+        # Store Controls position
+        controls_offset = int(math.sin(time_ms * 0.003 + 1.0) * 5)
+        button_positions["Controls"] = (x_offset, base_y_pos + controls_offset)
+        x_offset += x_spacing
+
+        # Store Quit position
+        quit_offset = int(math.sin(time_ms * 0.003 + 1.5) * 5)
+        button_positions["Quit"] = (x_offset, base_y_pos + quit_offset)
+
+        # B. UPDATE & DRAW GLOW VFX (MUST BE DRAWN BEFORE THE BUTTONS)
+        button_vfx.set_button_coords(button_positions)
+        button_vfx.update() 
+        button_vfx.draw(config.game_window) # <-- GLOW DRAWN HERE
+        
+        # C. DRAW BUTTONS (Foreground layer)
+        x_offset = x_start # Reset offset to draw the buttons
+
         # Start button
-        start_pressed = draw_button("Start", x_offset, base_y_pos + float_offset, config.WHITE, config.CAYAN)
+        start_pressed, start_hovered = draw_button("Start", x_offset, base_y_pos + float_offset, config.WHITE, config.CAYAN)
+        if start_hovered:
+            button_vfx.burst_particles("Start", count=80) # <-- Burst on hover!
         x_offset += x_spacing
 
         # Story button
-        story_offset = int(math.sin(time_ms * 0.003 + 0.5) * 5)
-        story_pressed = draw_button("Story", x_offset, base_y_pos + story_offset, config.WHITE, config.CAYAN)
+        story_pressed, story_hovered = draw_button("Story", x_offset, base_y_pos + story_offset, config.WHITE, config.CAYAN)
+        if story_hovered:
+            button_vfx.burst_particles("Story", count=80) # <-- Burst on hover!
         x_offset += x_spacing
 
         # Controls button
-        controls_offset = int(math.sin(time_ms * 0.003 + 1.0) * 5)
-        controls_pressed = draw_button("Controls", x_offset, base_y_pos + controls_offset, config.WHITE, config.CAYAN)
+        controls_pressed, controls_hovered = draw_button("Controls", x_offset, base_y_pos + controls_offset, config.WHITE, config.CAYAN)
+        if controls_hovered:
+            button_vfx.burst_particles("Controls", count=80) # <-- Burst on hover!
         x_offset += x_spacing
 
         # Quit button
-        quit_offset = int(math.sin(time_ms * 0.003 + 1.5) * 5)
-        quit_pressed = draw_button("Quit", x_offset, base_y_pos + quit_offset, config.WHITE, (255, 60, 60))
-
+        quit_pressed, quit_hovered = draw_button("Quit", x_offset, base_y_pos + quit_offset, config.WHITE, (255, 60, 60))
+        if quit_hovered:
+            button_vfx.burst_particles("Quit", count=80) # <-- Burst on hover!
+        
+        # --- END OF BUTTON LOGIC ---
+        
         # handle buttons actions and menu state
         if start_pressed:
             return "level_select"
@@ -422,6 +461,7 @@ def menu_screen():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 cursor.spawn_spores(pygame.mouse.get_pos())
 
+        # Cursor VFX (Must be the final drawing layer)
         for spore in cursor.spores[:]:
             if not spore.update():
                 cursor.spores.remove(spore)
@@ -432,7 +472,7 @@ def menu_screen():
         cursor.draw(config.game_window)
 
         pygame.display.update()
-        config.frameRate.tick(30) # half the frames of game 30 vs 60
+        config.frameRate.tick(30)
 
 
 

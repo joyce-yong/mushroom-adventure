@@ -418,10 +418,15 @@ while game_state != "exit":
     if game_state == "menu":
         config.channel_8.stop()
         config.channel_7.stop()
+        pygame.event.clear()
         game_state = menu.menu_screen()
+        pygame.event.clear()
+
     elif game_state == "play":
         game_state = start_game(current_level)
+
     elif game_state == "level_select":
+        pygame.event.clear()
         selected_level = menu.level_select()
         if isinstance(selected_level, int):
             current_level = selected_level
