@@ -20,7 +20,7 @@ class LevelTransition:
         if not self.is_running:
             return False
         
-        fade_speed = 35 # Fast transition speed
+        fade_speed = 5 
         self.current_alpha += fade_speed
         
         if self.current_alpha >= self.max_alpha:
