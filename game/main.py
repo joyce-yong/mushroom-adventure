@@ -22,7 +22,7 @@ from sprite_groups import (
     plasma_group)
 from level_config import get_level_config, load_background_images
 from vfx_transition import Transition
-
+from vfx_level1_star import FastStarVFX
 
 # music for game
 def play_music(song_path):
@@ -90,7 +90,22 @@ def spawn_enemy(level_config):
     
     enemy.flip = random.choice([True, False])
 
+STAR_COUNT = 150 # Number of fast-moving stars
+STAR_SPEED = 10 # Star scroll speed (faster than background speed of 2)
+STAR_COLOR = config.WHITE # Use WHITE for simplicity, or config.CAYAN for sci-fi
 
+def initialize_star_field(screen_width, screen_height, count):
+    stars = []
+    for _ in range(count):
+        stars.append({
+            'x': random.randint(0, screen_width),
+            'y': random.randint(0, screen_height),
+            'size': random.randint(1, 2) # Vary size for a better effect
+        })
+    return stars
+
+# Global variable to store and manage the star field state
+star_field_state = {'stars': initialize_star_field(config.SCREEN_WIDTH, config.SCREEN_HEIGHT, STAR_COUNT)}
 
 
 
@@ -102,6 +117,8 @@ def start_game(level_number=2):
     level_config = get_level_config(level_number)
     print(f"Starting {level_config['name']}")
     config.target_score = level_config.get('target_score', 0)
+
+    star_vfx = FastStarVFX(config.SCREEN_WIDTH, config.SCREEN_HEIGHT)
     
     # Load background
     level_background_list = load_background_images(level_config)
@@ -169,7 +186,9 @@ def start_game(level_number=2):
         
         draw_scrolling_bg(config.game_window, level_background_list, config.scroll_state, speed=2)
         
-        
+        # 2. Update and Draw the new Fast Star VFX (ADD/REPLACE OLD LOGIC WITH THIS)
+        star_vfx.update()
+        star_vfx.draw(config.game_window)
 
         # black Hole and Quark star (only if enabled for this level)
         if level_config['blackholes_enabled'] and random.random() < 0.00125:
