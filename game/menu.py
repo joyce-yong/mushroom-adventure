@@ -5,6 +5,7 @@ from vfx_galaxy import GalaxyBackground
 from vfx_transition import Transition
 from vfx_cybergrid import CyberGrid
 from vfx_bionebula import BioNebula
+from vfx_cometstar import CometStarVFX
 
 
 # ___ Menu Setup ___
@@ -341,27 +342,42 @@ def menu_screen():
     in_menu = True
     global is_paused
 
-    idx = 0  # index of current menu image
+    idx = 0 
     last_switch = pygame.time.get_ticks()
-    switch_interval = 100  # time until next image
+    switch_interval = 100 
 
     cursor = Cursor("img/cursor", frame_rate=120)
     cursor.load_frames("img/cursor", scale_factor=1.5)
 
+    # --- INITIALIZE THE NEW VFX CLASS ---
+    comet_vfx = CometStarVFX(config.screen_width, config.screen_height, num_comets=8)
+
     while in_menu:
         now = pygame.time.get_ticks()
         if now - last_switch >= switch_interval:
-            idx = (idx + 1) % len(menu_images)  # next in list
-            last_switch = now # reset time to current time to track next switch
+            idx = (idx + 1) % len(menu_images)
+            last_switch = now
 
         # Floating Motion Calculation
         time_ms = pygame.time.get_ticks()
         float_offset = int(math.sin(time_ms * 0.003) * 5)
         
-        # draw current image
+        # 1. Draw current menu image (THE BACKGROUND)
         config.game_window.blit(menu_images[idx], (0, 0))
 
-        # draw buttons
+        # 2. Draw Semi-transparent overlay for trailing blur effect
+        #    NOTE: This darkens the screen, which helps the light effects pop.
+        overlay = pygame.Surface((config.screen_width, config.screen_height))
+        overlay.fill((10, 10, 25))
+        overlay.set_alpha(40) 
+        config.game_window.blit(overlay, (0, 0))
+
+        # 3. --- UPDATE & DRAW VFX (THE FOREGROUND) ---
+        comet_vfx.update()
+        comet_vfx.draw(config.game_window)
+        # -------------------------------------------
+        
+        # draw buttons (Buttons go on top of the VFX for clear interaction)
         num_buttons = 4
         base_y_pos = int(config.screen_height * 0.80) # Store the base Y-position
 
