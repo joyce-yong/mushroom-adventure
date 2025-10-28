@@ -25,6 +25,7 @@ from vfx_transition import Transition # <-- Standard transition (for level warp)
 from vfx_level_star import FastStarVFX
 from vfx_player_thruster import ThrusterVFX
 from vfx_level_transition import LevelTransition # <-- Win/Lose transition (with color)
+from vfx_level_comet import Comet
 
 # music for game
 def play_music(song_path):
@@ -122,6 +123,12 @@ def start_game(level_number=2):
     config.target_score = level_config.get('target_score', 0)
 
     star_vfx = FastStarVFX(config.SCREEN_WIDTH, config.SCREEN_HEIGHT)
+
+    initial_comet_count = 3
+    global comets, comet_spawn_timer
+    comets = [Comet(config.SCREEN_WIDTH, config.SCREEN_HEIGHT) for _ in range(initial_comet_count)]
+    comet_spawn_interval = 240 # Frames (4 seconds at 60 FPS)
+    comet_spawn_timer = 0
     
     # Load background
     level_background_list = load_background_images(level_config)
@@ -204,6 +211,16 @@ def start_game(level_number=2):
         # 2. Update and Draw the new Fast Star VFX (ADD/REPLACE OLD LOGIC WITH THIS)
         star_vfx.update()
         star_vfx.draw(config.game_window)
+
+        comet_spawn_timer += 1
+        if comet_spawn_timer > comet_spawn_interval:
+            comets.append(Comet(config.SCREEN_WIDTH, config.SCREEN_HEIGHT))
+            comet_spawn_timer = 0
+            
+        # Update & draw comets
+        for comet in comets:
+            comet.update()
+            comet.draw(config.game_window)
 
         is_moving = config.moving_left or config.moving_right or config.moving_up or config.moving_down
         thruster_vfx.update(is_moving, scroll_speed)
