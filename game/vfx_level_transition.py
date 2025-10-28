@@ -13,12 +13,12 @@ class LevelTransition: # Renamed from Transition to LevelTransition as per your 
             self.base_color = (200, 0, 0) # Red
             
         self.max_alpha = 255
-        self.current_alpha = 0
+        self.current_alpha = 15
         self.is_running = True
         
         # Create a persistent overlay surface
         self.overlay = pygame.Surface(surface.get_size(), pygame.SRCALPHA) # Use SRCALPHA for transparency
-        self.overlay.fill((0,0,0,0)) # Start fully transparent
+        self.transition_color = (0,0,0,0) # Start fully transparent
         
         self.fade_speed = 4 # Control speed here (lower for longer, smoother)
 
@@ -99,6 +99,22 @@ class LevelTransition: # Renamed from Transition to LevelTransition as per your 
             self.current_alpha = 0
             self.is_running = False
             
-        # Update streaks just like warp_out, but now they are moving AWAY
-        self.update_streaks() 
         return self.is_running
+        
+    def draw(self):
+        if self.is_running or self.current_alpha > 0:
+            # Clear the overlay and redraw everything
+            self.overlay.fill((0,0,0,0)) # Clear previous frame's drawings
+            
+            # Draw the base color with current alpha
+            base_overlay_surface = pygame.Surface(self.surface.get_size(), pygame.SRCALPHA)
+            
+            # This line handles the base color fading in/out
+            base_overlay_surface.fill(self.base_color + (min(self.current_alpha, 200),)) 
+            
+            self.overlay.blit(base_overlay_surface, (0,0))
+
+            # ... (Streaks drawing logic follows)
+            
+            # Blit the entire overlay onto the main surface
+            self.surface.blit(self.overlay, (0, 0))
