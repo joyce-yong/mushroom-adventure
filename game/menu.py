@@ -452,12 +452,6 @@ def result_screen():
         instruction_rect = instruction_surface.get_rect(center=(config.screen_width // 2, instruction_y))
         config.game_window.blit(instruction_surface, instruction_rect)
 
-        # *** PLACEHOLDER FOR YOUR VFX IMPLEMENTATION ***
-        # if is_win:
-        #     draw_mission_completed_vfx(title_rect) # Function to draw light bloom, sparkles, etc.
-        # else:
-        #     draw_mission_failed_vfx() # Function to draw red haze, vignette, etc.
-
         # update and draw cursor
         for spore in cursor.spores[:]:
             if not spore.update():
