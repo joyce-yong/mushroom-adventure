@@ -9,6 +9,8 @@ from vfx_cometstar import CometStarVFX
 from vfx_glowparticle import GlowParticle
 from vfx_buttonglow import ButtonGlowVFX
 
+from vfx_sparkle import SparkleVFX
+
 
 # ___ Menu Setup ___
 menu_images = []
@@ -480,10 +482,21 @@ def menu_screen():
 def result_screen():
     is_win = config.score >= getattr(config, 'target_score', 0)
 
+    sparkle_vfx = None
+
     if is_win:
         title_text = "MISSION COMPLETED"
         title_color = config.CAYAN
         background_image = load_result_bg('win.png')
+
+        # initialize sparkle vfx
+        sparkle_vfx = SparkleVFX(
+            config.screen_width, 
+            config.screen_height, 
+            num_particles = 300,
+            color=config.WHITE, 
+            speed_mod = 0.005
+        )
     else:
         title_text = "MISSION FAILED"
         title_color = config.RED
@@ -504,8 +517,15 @@ def result_screen():
     waiting = True
 
     while waiting:
+        dt = clock.tick(60) / 1000.0 # get delta time
+
         # background
         config.game_window.blit(background_image, (0, 0))
+
+        # vfx update
+        if sparkle_vfx:
+            sparkle_vfx.update(dt)
+            sparkle_vfx.draw(config.game_window)
         
         # draw title
         title_surface = config.title_font.render(title_text, True, title_color)
