@@ -489,13 +489,13 @@ def result_screen():
         title_color = config.RED
         background_image = load_result_bg('lose.png')
 
-    title_y = int(config.screen_height * 0.25)
+    title_y = int(config.screen_height * 0.20)
     
     score_text = f"Score: {config.score} / {getattr(config, 'target_score', 0)}"
-    score_y = int(config.screen_height * 0.45)
+    score_y = int(config.screen_height * 0.50)
     
     instruction_text = "Press Space to return to menu"
-    instruction_y = int(config.screen_height * 0.70)
+    instruction_y = int(config.screen_height * 0.80)
 
     cursor = Cursor("img/cursor", frame_rate=120)
     cursor.load_frames("img/cursor", scale_factor=1.5)
