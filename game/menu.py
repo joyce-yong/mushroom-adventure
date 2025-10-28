@@ -334,6 +334,9 @@ def controls():
 
 
 # ___ Menu screen ___
+# ... (inside menu.py)
+
+# ___ Menu screen ___
 def menu_screen():
     in_menu = True
     global is_paused
@@ -351,28 +354,39 @@ def menu_screen():
             idx = (idx + 1) % len(menu_images)  # next in list
             last_switch = now # reset time to current time to track next switch
 
+        # Floating Motion Calculation
+        time_ms = pygame.time.get_ticks()
+        float_offset = int(math.sin(time_ms * 0.003) * 5)
+        
         # draw current image
         config.game_window.blit(menu_images[idx], (0, 0))
 
         # draw buttons
         num_buttons = 4
-        y_pos = int(config.screen_height * 0.80)
+        base_y_pos = int(config.screen_height * 0.80) # Store the base Y-position
 
         total_width = int(config.screen_width * 0.75)
         x_spacing = total_width // (num_buttons - 1) if num_buttons > 1 else 0
         x_start = int(config.screen_width - total_width) // 2
         x_offset = x_start
-
-        start_pressed = draw_button("Start", x_offset, y_pos, config.WHITE, config.CAYAN)
+        
+        # Start button
+        start_pressed = draw_button("Start", x_offset, base_y_pos + float_offset, config.WHITE, config.CAYAN)
         x_offset += x_spacing
 
-        story_pressed = draw_button("Story", x_offset, y_pos, config.WHITE, config.CAYAN)
+        # Story button
+        story_offset = int(math.sin(time_ms * 0.003 + 0.5) * 5)
+        story_pressed = draw_button("Story", x_offset, base_y_pos + story_offset, config.WHITE, config.CAYAN)
         x_offset += x_spacing
 
-        controls_pressed = draw_button("Controls", x_offset, y_pos, config.WHITE, config.CAYAN)
+        # Controls button
+        controls_offset = int(math.sin(time_ms * 0.003 + 1.0) * 5)
+        controls_pressed = draw_button("Controls", x_offset, base_y_pos + controls_offset, config.WHITE, config.CAYAN)
         x_offset += x_spacing
 
-        quit_pressed = draw_button("Quit", x_offset, y_pos, config.WHITE, (255, 60, 60))
+        # Quit button
+        quit_offset = int(math.sin(time_ms * 0.003 + 1.5) * 5)
+        quit_pressed = draw_button("Quit", x_offset, base_y_pos + quit_offset, config.WHITE, (255, 60, 60))
 
         # handle buttons actions and menu state
         if start_pressed:
