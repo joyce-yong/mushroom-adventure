@@ -11,6 +11,7 @@ from vfx_buttonglow import ButtonGlowVFX
 
 from vfx_sparkle import SparkleVFX
 from vfx_haze import GradientHaze
+from vfx_fungalspores import FungalSporesVFX
 
 # ___ Menu Setup ___
 menu_images = []
@@ -484,12 +485,22 @@ def result_screen():
 
     haze_vfx = None
     sparkle_vfx = None
+    fungalspore_vfx = None
 
     if is_win:
         title_text = "MISSION COMPLETED"
         title_color = config.CAYAN
         background_image = load_result_bg('win.png')
 
+        # initialize fungal spore vfx
+        win_colors = [config.CAYAN, config.YELLOW, config.WHITE]
+        fungalspore_vfx = FungalSporesVFX(
+            config.screen_width, 
+            config.screen_height, 
+            direction = "rising",
+            color_theme = win_colors,
+            num_spores = 200
+        )
         # initialize haze vfx
         haze_vfx = GradientHaze( 
             config.screen_width, 
@@ -512,6 +523,15 @@ def result_screen():
         title_color = config.RED
         background_image = load_result_bg('lose.png')
 
+        # initialize fungal spore vfx
+        lose_colors = [config.PURPLE, config.RED, config.BLACK]
+        fungalspore_vfx = FungalSporesVFX(
+            config.screen_width, 
+            config.screen_height, 
+            direction = "falling",
+            color_theme = lose_colors,
+            num_spores = 200
+        )
         # initialize haze vfx
         haze_vfx = GradientHaze( 
             config.screen_width, 
@@ -550,6 +570,10 @@ def result_screen():
         if haze_vfx:
             haze_vfx.update(dt)
             haze_vfx.draw(config.game_window)
+        
+        if fungalspore_vfx:
+            fungalspore_vfx.update(dt)
+            fungalspore_vfx.draw(config.game_window)
         
         # draw title
         title_surface = config.title_font.render(title_text, True, title_color)
