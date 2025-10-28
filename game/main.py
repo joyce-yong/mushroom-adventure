@@ -21,9 +21,10 @@ from sprite_groups import (
     enemy_lasers,
     plasma_group)
 from level_config import get_level_config, load_background_images
-from vfx_transition import Transition
+from vfx_transition import Transition # <-- Standard transition (for level warp)
 from vfx_level_star import FastStarVFX
 from vfx_player_thruster import ThrusterVFX
+from vfx_level_transition import LevelTransition # <-- Win/Lose transition (with color)
 
 # music for game
 def play_music(song_path):
@@ -113,6 +114,7 @@ star_field_state = {'stars': initialize_star_field(config.SCREEN_WIDTH, config.S
 # ____ main ____
 def start_game(level_number=2):
     global current_song
+    global player, thruster_vfx, star_vfx, health_bar, shield_bar, level_background_list, wave_count 
     
     # Get level configuration
     level_config = get_level_config(level_number)
@@ -178,14 +180,24 @@ def start_game(level_number=2):
     pygame.time.set_timer(SPAWN_EVENT, spawn_interval)
 
 
-
     while playing:
         config.frameRate.tick(config.FPS) # get time and frame rate (loop rate)
         config.game_window.fill(config.BLACK)
 
         if player.health <= 0:
             print("You died, health is: ", player.health, ", with a score of:", config.score)
-            return "result_screen"
+            
+            # --- START OF DEATH TRANSITION LOGIC (First Check) ---
+            mission_complete = config.score >= config.target_score
+            outcome_color = "green" if mission_complete else "red"
+            
+            global transition
+            # *** FIX: Use LevelTransition here with outcome_color ***
+            transition = LevelTransition(config.game_window, outcome_color=outcome_color)
+            
+            # Return a temporary state to trigger the transition effect in the main loop
+            return "death_transition"
+            # --- END OF DEATH TRANSITION LOGIC ---
         
         draw_scrolling_bg(config.game_window, level_background_list, config.scroll_state, speed=2)
         
@@ -308,8 +320,18 @@ def start_game(level_number=2):
         # check for death after blackhole updates (blackholes can instantly kill player)
         if player.health <= 0:
             print("You died, health is: ", player.health, ", with a score of:", config.score)
-            return "result_screen"
-        
+            
+            # --- START OF DEATH TRANSITION LOGIC (Second Check) ---
+            mission_complete = config.score >= config.target_score
+            outcome_color = "green" if mission_complete else "red"
+            
+            # *** FIX: Use LevelTransition here with outcome_color ***
+            transition = LevelTransition(config.game_window, outcome_color=outcome_color)
+            
+            # Return a temporary state to trigger the transition effect in the main loop
+            return "death_transition"
+            # --- END OF DEATH TRANSITION LOGIC ---
+            
         thruster_vfx.draw(config.game_window)
         
         player.draw()
@@ -342,7 +364,6 @@ def start_game(level_number=2):
             elif not boss_present and config.mothership_wave < wave_count : # if now carrier boss and we are in diffrent wave than boss spawn wave
                 config.motherShip_boss_active = False
         
-
 
 
         # music switching logic
@@ -395,8 +416,7 @@ def start_game(level_number=2):
                 if event.key == pygame.K_w: config.laserLine_fire = False
                 if event.key == pygame.K_q: config.plasma_shooting = False
                 
-
-
+ 
             # _______ Spawn enemy waves ________
             if event.type == SPAWN_EVENT: # 12s
                 # if next wave is a mothership (only if enabled for this level)
@@ -414,9 +434,9 @@ def start_game(level_number=2):
                     # Calculate how many enemies to spawn this wave
                     enemies_to_spawn = wave_count * level_config['wave_size_multiplier']
                     pending_spawns = enemies_to_spawn
-                    wave_count += 1             # next wave is 1 larger
+                    wave_count += 1          # next wave is 1 larger
                     spawn_enemy(level_config)
-                    pending_spawns -= 1         # we spawned one so less pending now
+                    pending_spawns -= 1          # we spawned one so less pending now
                     if pending_spawns > 0:
                         pygame.time.set_timer(SPAWN_SINGLE_EVENT, 1000) # 100ms delay between enemies
                     
@@ -427,7 +447,7 @@ def start_game(level_number=2):
                 if pending_spawns <= 0:
                     pygame.time.set_timer(SPAWN_SINGLE_EVENT, 0) # stop stagger timer
             
-                           
+                            
         pygame.display.update()
 
     return "menu"
@@ -454,7 +474,8 @@ while game_state != "exit":
         selected_level = menu.level_select()
         if isinstance(selected_level, int):
             current_level = selected_level
-            transition = Transition(config.game_window)
+            # Use the standard Transition for level warp-in
+            transition = Transition(config.game_window) 
             game_state = "transition_in" 
         elif selected_level == "menu":
             game_state = "menu"
@@ -475,6 +496,54 @@ while game_state != "exit":
             game_state = "play"
             transition = None
     
+    # --- New Death Transition State ---
+    elif game_state == "death_transition":
+        config.frameRate.tick(config.FPS)
+        
+        # 1. Draw the Background (Bottom Layer)
+        draw_scrolling_bg(config.game_window, level_background_list, config.scroll_state, speed=0) 
+        
+        # 2. Draw all Game Objects (Middle Layers) in the correct order
+        star_vfx.draw(config.game_window)
+        thruster_vfx.draw(config.game_window)
+
+        # Draw Sprite Groups (The final explosion/laser frame)
+        blackholes_group.draw(config.game_window)
+        explosion_group.draw(config.game_window)
+        rockets_group.draw(config.game_window)
+        asteroid_group.draw(config.game_window)
+        enemy_group.draw(config.game_window)
+        for beam in enemy_beam_group:
+            beam.draw(config.game_window)
+        
+        player_lasers.draw(config.game_window)
+        plasma_group.draw(config.game_window)
+        heavyLaser_group.draw(config.game_window)
+        
+        # Draw the Player (where it died)
+        player.draw() 
+        
+        # Draw the UI (On top of game action)
+        health_bar.draw(player.health, shield=False)
+        menu.drawText(f'Health:', config.font, config.WHITE, 10, 790)
+        shield_bar.draw(player.shield, shield=True)
+        menu.drawText(f'Shield:', config.font, config.WHITE, 10, 810)
+        menu.drawText(f'Score: {config.score} / {config.target_score}', config.font, config.WHITE, 10, 830)
+        menu.drawText(f'Waves: {wave_count}', config.font, config.RED, 10, 870) 
+        
+        
+        # 3. Run and Draw the Transition (TOP LAYER)
+        # We now know 'transition' is a LevelTransition object created in start_game
+        is_running = transition.warp_out() 
+        transition.draw() 
+        
+        pygame.display.update()
+        
+        if not is_running:
+            transition = None
+            game_state = "result_screen"
+            
+    # --- Existing Result Screen State ---
     elif game_state == "result_screen":
         game_state = menu.result_screen()
 
