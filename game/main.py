@@ -22,7 +22,7 @@ from sprite_groups import (
     plasma_group)
 from level_config import get_level_config, load_background_images
 from vfx_transition import Transition
-from vfx_level1_star import FastStarVFX
+from vfx_level_star import FastStarVFX
 from vfx_player_thruster import ThrusterVFX
 
 # music for game
