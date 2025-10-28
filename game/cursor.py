@@ -1,7 +1,7 @@
 import pygame
 import os
 
-from spore_effect import Spore
+from vfx_spore_effect import Spore
 import random
 
 class Cursor:
