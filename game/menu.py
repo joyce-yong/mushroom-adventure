@@ -566,8 +566,14 @@ def result_screen():
     clock = pygame.time.Clock()
     waiting = True
 
+    original_score_y = score_y
+
     while waiting:
         dt = clock.tick(60) / 1000.0 # get delta time
+
+        time_ms = pygame.time.get_ticks()
+        float_offset = int(math.sin(time_ms * 0.003) * 8)
+        current_score_y = original_score_y + float_offset
 
         # background
         config.game_window.blit(background_image, (0, 0))
@@ -579,7 +585,7 @@ def result_screen():
         
         # draw score
         score_surface = config.score_fontLarge.render(score_text, True, config.PURPLE)
-        score_rect = score_surface.get_rect(center=(config.screen_width // 2, score_y))
+        score_rect = score_surface.get_rect(center=(config.screen_width // 2, current_score_y))
         config.game_window.blit(score_surface, score_rect)
         
         # draw instruction
