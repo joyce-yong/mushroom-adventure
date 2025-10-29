@@ -139,40 +139,8 @@ motherShip_boss_active = False
 mothership_wave = 0 # keep track of current wave and mothership wave to spawn only once per wave level
 
 
-
-# Background 
+# Background scroll state
 scroll_state = {'y': 0}
 
-# background assets
-# list of background images and their file paths
-bg_files = [
-    'img/background/sd3.png',
-    'img/background/sd2.png',
-    'img/background/sd4.png',
-    'img/background/sd5.png',
-    'img/background/sd1.png'
-]
-
-# list to store scaled pygame.Surface objects
-background_list = []
-
+# Screen dimensions
 screen_width, screen_height = game_window.get_size()
-
-for file in bg_files:
-    old_bg = pygame.image.load(file).convert_alpha()
-    
-    # image scale factors
-    scale_width = 1
-    scale_height = 1
-    
-    # initial scaling
-    bg_img = pygame.transform.scale(
-        old_bg,
-        (old_bg.get_width() * scale_width,
-        old_bg.get_height() * scale_height))
-    
-    # new scaled image to fit screen
-    scaled_bg = pygame.transform.scale(bg_img, (screen_width, screen_height))
-    
-    # add to list
-    background_list.append(scaled_bg)
