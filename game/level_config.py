@@ -36,7 +36,7 @@ LEVELS = {
         'wave_size_multiplier': 1,
 
         # target score
-        'target_score': 500,
+        'target_score': 2000,
     },
     
     2: {
@@ -77,7 +77,7 @@ LEVELS = {
         'wave_size_multiplier': 1,
 
         # target score
-        'target_score': 1000,
+        'target_score': 4000,
     }
 }
 
