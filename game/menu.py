@@ -264,16 +264,18 @@ def controls():
         "Laser:",
         "Heavy Laser:",
         "Mushroom Rocket:",
-        "Laser Line:",
-        "Plasma Fire:"
+        "Ice Bullet (Ability):",
+        "Laser Line (Ability):",
+        "Plasma Fire (Ability):"
     ]
     inputs = [
         "Arrow Keys",
         "A Key",
         "D Key",
         "S Key",
-        "W Key",
-        "Q Key"
+        "E Key (Level 1)",
+        "W Key (Level 2)",
+        "Q Key (Level 2)"
     ]
     
     while showing:
