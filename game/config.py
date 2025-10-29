@@ -64,6 +64,7 @@ heavy_shooting = False
 rocket = False
 laserLine_fire = False
 plasma_shooting = False
+ice_shooting = False
 
 
 # audio
@@ -78,6 +79,7 @@ death_fx = pygame.mixer.Sound(os.path.join('audio', 'explosion3.ogg'))
 plasma_explode_fx = pygame.mixer.Sound(os.path.join('audio', 'buzz.ogg'))
 plasma_fx = pygame.mixer.Sound(os.path.join('audio', 'misc_01.ogg'))
 mothership_fx = pygame.mixer.Sound(os.path.join('audio', 'boss.mp3'))
+ice_shoot_fx = pygame.mixer.Sound(os.path.join('audio', 'ice.mp3'))
 laser_fx.set_volume(0.2)
 
 channel_1 = pygame.mixer.Channel(0)  # intros

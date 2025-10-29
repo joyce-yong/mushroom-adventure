@@ -601,3 +601,112 @@ class Plasma(pygame.sprite.Sprite):
     
     def draw(self):
         config.game_window.blit(self.image, self.rect)
+
+
+
+
+# ____ Ice Bullet ____
+# only targets enemies, ignores asteroids/blackholes/quark stars
+class IceBullet:
+    def __init__(self, shooter, enemy_group, damage=30, freeze_duration_ms=3000):
+        self.shooter = shooter
+        self.enemy_group = enemy_group
+        self.damage = damage
+        self.freeze_duration_ms = int(freeze_duration_ms)
+        self.velocity = 15  # pixels per frame
+        self.active = True
+        self.pos = pygame.math.Vector2(shooter.rect.centerx, shooter.rect.top)
+        self.prev_pos = pygame.math.Vector2(self.pos)
+        self.radius = 8
+        self.particle_offsets = []
+        
+        # generate random particle positions for visual effect
+        for _ in range(4):
+            self.particle_offsets.append(
+                pygame.math.Vector2(random.uniform(-4, 4), random.uniform(-4, 4))
+            )
+        
+        self.rect = pygame.Rect(
+            int(self.pos.x - self.radius),
+            int(self.pos.y - self.radius - 2),
+            self.radius * 2,
+            self.radius * 2 + 4
+        )
+    
+    def update(self):
+        if not self.active:
+            return
+        
+        self.prev_pos = pygame.math.Vector2(self.pos)
+        self.pos.y -= self.velocity
+        
+        self.rect.centerx = int(self.pos.x)
+        self.rect.centery = int(self.pos.y)
+        
+        # blackhole / quark star collision check
+        bh_group = getattr(sprite_groups, 'blackholes_group', None)
+        if bh_group:
+            for bh in list(bh_group):
+                try:
+                    if bh.rect.clipline(int(self.prev_pos.x), int(self.prev_pos.y), 
+                                       int(self.pos.x), int(self.pos.y)):
+                        self.active = False
+                        return
+                except Exception:
+                    if bh.rect.colliderect(self.rect):
+                        self.active = False
+                        return
+        
+        if self.pos.y < -50 or self.pos.y > config.SCREEN_HEIGHT + 50:
+            self.active = False
+            return
+        
+        if self.pos.x < -50 or self.pos.x > config.SCREEN_WIDTH + 50:
+            self.active = False
+            return
+        
+        # check collision with enemies only
+        for enemy in list(self.enemy_group):
+            if not hasattr(enemy, "rect"):
+                continue
+                
+            if self.rect.colliderect(enemy.rect):
+                apply_damage(enemy, self.damage)
+                
+                # apply freeze effect
+                if not hasattr(enemy, "frozen_until"):
+                    enemy.frozen_until = 0
+                
+                enemy.frozen_until = pygame.time.get_ticks() + self.freeze_duration_ms
+                
+                self.active = False
+                return
+    
+    def draw(self, surface):
+        if not self.active:
+            return
+        
+        x, y = int(self.pos.x), int(self.pos.y)
+        
+        tip = (x, y - 10)
+        left = (x - 6, y + 8)
+        right = (x + 6, y + 8)
+        
+        pygame.draw.polygon(surface, (180, 240, 255), [tip, left, right])
+        
+        # inner lighter triangle for depth
+        inner_tip = (x, y - 8)
+        inner_left = (x - 4, y + 6)
+        inner_right = (x + 4, y + 6)
+        pygame.draw.polygon(surface, (220, 250, 255), [inner_tip, inner_left, inner_right])
+        
+        # white outline
+        pygame.draw.polygon(surface, (255, 255, 255), [tip, left, right], 2)
+        
+        # floating snow particles around the bullet
+        for offset in self.particle_offsets:
+            particle_pos = (int(x + offset.x), int(y + offset.y))
+            pygame.draw.circle(surface, (230, 245, 255), particle_pos, 2)
+            pygame.draw.circle(surface, (255, 255, 255), particle_pos, 1)
+        
+        pygame.draw.circle(surface, (255, 255, 255), (x, y - 6), 2)

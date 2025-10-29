@@ -86,20 +86,55 @@ class Character(pygame.sprite.Sprite):
         self.last_plasma_time = 0
         self.plasma_cooldown = 400 # (0.4)s
 
+        # ice bullet
+        self.last_ice_time = 0
+        self.ice_cooldown = 2000  # 2s
 
-
+        # freeze status
+        self.frozen_until = 0
+        self.is_frozen = False
 
 
 
     # create custom draw method for characters
     def draw(self):
-        config.game_window.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
+        img = self.image.copy()
+
+        # frozen visual effect
+        if self.character_type.startswith("enemy") and self.is_frozen:
+            # create transparent layer same size as enemy image
+            freeze_overlay = pygame.Surface(img.get_size(), pygame.SRCALPHA)
+            
+            mask = pygame.mask.from_surface(img)
+            ice_surface = mask.to_surface(
+                setcolor=(120, 200, 255, 80),
+                unsetcolor=(0, 0, 0, 0)
+            )
+            
+            # overlay ice layer
+            img.blit(ice_surface, (0, 0), special_flags=pygame.BLEND_RGBA_ADD)
+            
+            outline = mask.outline()
+            for i, point in enumerate(outline):
+                if i % 2 == 0:
+                    pygame.draw.circle(img, (180, 240, 255, 150), point, 1)
+
+        config.game_window.blit(pygame.transform.flip(img, self.flip, False), self.rect)
+
         
         
     # update character class objects
     def update(self, player):
         self.check_alive(player)
         self.damage_flash()  
+
+        # only enemies can be frozen
+        if self.character_type.startswith("enemy"):
+            now = pygame.time.get_ticks()
+            if now < self.frozen_until:
+                self.is_frozen = True
+            else:
+                self.is_frozen = False
         
     
 
@@ -174,9 +209,6 @@ class Character(pygame.sprite.Sprite):
 
 
 
-
-
-
     # movement method for player or ai if you choose
     def movement(self, moving_left, moving_right, moving_up, moving_down):
         dx = 0
@@ -234,10 +266,12 @@ class Character(pygame.sprite.Sprite):
 
 
 
-
-
     # AI enemies 
     def update_enemy(self, window_height):
+        # check if frozen
+        if hasattr(self, 'frozen_until') and pygame.time.get_ticks() < self.frozen_until:
+            return
+
         if self.phase == "enter":
             if self.rect.y < self.target_y:
                 self.rect.y += self.velocity
@@ -288,6 +322,10 @@ class Character(pygame.sprite.Sprite):
         
         if self.character_type not in ("enemy3", "enemy9"):
             return # only ai3 and ai9 shoots
+        
+        # check if frozen
+        if hasattr(self, 'frozen_until') and pygame.time.get_ticks() < self.frozen_until:
+            return  # cannot shoot while frozen
         
         # create a detection rect
         detection_rect = pygame.Rect(
@@ -361,6 +399,10 @@ class Character(pygame.sprite.Sprite):
         if self.character_type != "enemy1":
             return
         
+        # check if frozen
+        if hasattr(self, 'frozen_until') and pygame.time.get_ticks() < self.frozen_until:
+            return  # cannot shoot while frozen
+        
         
         detection_rect = pygame.Rect(
             self.rect.centerx - 25, # offset x by 25 px to left so we center based on our picture 
@@ -412,6 +454,10 @@ class Character(pygame.sprite.Sprite):
         if self.character_type not in "enemy2":
             return
         
+        # check if frozen
+        if hasattr(self, 'frozen_until') and pygame.time.get_ticks() < self.frozen_until:
+            return  # cannot shoot while frozen
+        
         # detection area rectangle
         detection_rect = pygame.Rect(
             self.rect.centerx - 25, # check image and center in x  -25px (left)
@@ -448,6 +494,10 @@ class Character(pygame.sprite.Sprite):
         # if not enemy 5 skip
         if self.character_type != "enemy5":
             return
+        
+        # check if frozen
+        if hasattr(self, 'frozen_until') and pygame.time.get_ticks() < self.frozen_until:
+            return  # cannot shoot while frozen
                 
         # give 1 second delay before firing
         if pygame.time.get_ticks() - self.spawn_time < 1000:
@@ -499,13 +549,21 @@ class Character(pygame.sprite.Sprite):
     # laser rapid fire for enemy method
     def ai_shoot_laserline(self, player, asteroid_group=None, laserline_group=None, blackholes=None):
         from projectiles import LaserLine
-        """
-        Enemy 4 for now can only shoot laserline and the player to 
+        """ 
         Only create one laserline and keep updating those object
         """
         # check if enemy object is enemy 4
         if self.character_type != "enemy4":
             return # skip logic if not enemy 4
+        
+        # check if frozen
+        if hasattr(self, 'frozen_until') and pygame.time.get_ticks() < self.frozen_until:
+            # stop firing if frozen
+            if laserline_group is not None:
+                for line in list(laserline_group):
+                    if getattr(line, "character", None) == self:
+                        line.trigger(False)
+            return  # cannot shoot while frozen
         
         # Remove existing laser line if enemy is dead
         if not self.alive and laserline_group is not None: # if enemy has died and there is a laserline object so not of type None
@@ -553,9 +611,6 @@ class Character(pygame.sprite.Sprite):
                         line.trigger(False)
 
 
-    
-
-
 
     def shoot_plasma(self, target_group, asteroid_group, plasma_group):
         from projectiles import Plasma
@@ -582,6 +637,27 @@ class Character(pygame.sprite.Sprite):
                 
             self.last_plasma_time = now # keep track of new time for next event
             config.channel_12.play(config.plasma_fx)
+
+
+    
+    def shoot_ice(self, enemy_group, ice_bullets_list):
+        from projectiles import IceBullet
+        
+        if self.character_type.startswith("enemy"):
+            return  # only player can shoot ice bullets
+        
+        now = pygame.time.get_ticks()
+        
+        if now - self.last_ice_time >= self.ice_cooldown:
+            # create ice bullet from player's top center
+            ice_bullet = IceBullet(self, enemy_group, damage=30, freeze_duration_ms=3000)
+            ice_bullets_list.append(ice_bullet)
+            
+            self.last_ice_time = now
+            
+            #if hasattr(config, "ice_shoot_fx") and hasattr(config, "channel_13"):
+            config.channel_13.set_volume(0.5)
+            config.channel_13.play(config.ice_shoot_fx)
             
             
             
@@ -589,6 +665,10 @@ class Character(pygame.sprite.Sprite):
         
         if self.character_type != "enemy6":
             return
+        
+        # check if frozen
+        if hasattr(self, 'frozen_until') and pygame.time.get_ticks() < self.frozen_until:
+            return  # cannot shoot while frozen
         
         from projectiles import Plasma
         
@@ -621,7 +701,6 @@ class Character(pygame.sprite.Sprite):
 
 
 
-
     def ai_enemy7_shoot(self, player, enemy_group, asteroid_group, rockets_group, plasma_group):
         """
         - 2 plasma bolts
@@ -631,6 +710,10 @@ class Character(pygame.sprite.Sprite):
 
         if self.character_type != "enemy7" or not self.alive:
             return
+        
+        # check if frozen
+        if hasattr(self, 'frozen_until') and pygame.time.get_ticks() < self.frozen_until:
+            return  # cannot shoot while frozen
             
         now = pygame.time.get_ticks()
         
@@ -693,6 +776,8 @@ class Character(pygame.sprite.Sprite):
             config.laser_fx.play()
 
 
+
+
 class HealthBar():
     
     def __init__(self, healthBar_x, healthBar_y, health, max_health):
@@ -721,8 +806,7 @@ class HealthBar():
         
             
         
-        
-             
+
 explosion_frames = []
 for i in range(3): # assume 3 images in explosion folder
     img = pygame.image.load(f'img/death/{i}.png').convert_alpha()
@@ -762,10 +846,6 @@ class Explosion(pygame.sprite.Sprite):
     
     def draw(self, surface):
         surface.blit(self.image, self.rect)
-
-
-
-
 
 
 

@@ -3,7 +3,6 @@ import os, gc
 from pygame import mixer # type: ignore
 import random
 
-
 import config
 import menu
 import characterClass
@@ -21,10 +20,11 @@ from sprite_groups import (
     enemy_lasers,
     plasma_group)
 from level_config import get_level_config, load_background_images
-from vfx_transition import Transition # <-- Standard transition (for level warp)
+
+from vfx_transition import Transition
 from vfx_level_star import FastStarVFX
 from vfx_player_thruster import ThrusterVFX
-from vfx_level_transition import LevelTransition # <-- Win/Lose transition (with color)
+from vfx_level_transition import LevelTransition
 from vfx_level_comet import Comet
 
 # music for game
@@ -93,9 +93,9 @@ def spawn_enemy(level_config):
     
     enemy.flip = random.choice([True, False])
 
-STAR_COUNT = 150 # Number of fast-moving stars
-STAR_SPEED = 10 # Star scroll speed (faster than background speed of 2)
-STAR_COLOR = config.WHITE # Use WHITE for simplicity, or config.CAYAN for sci-fi
+STAR_COUNT = 150 # number of fast-moving stars
+STAR_SPEED = 10 # star scroll speed
+STAR_COLOR = config.WHITE
 
 def initialize_star_field(screen_width, screen_height, count):
     stars = []
@@ -103,11 +103,10 @@ def initialize_star_field(screen_width, screen_height, count):
         stars.append({
             'x': random.randint(0, screen_width),
             'y': random.randint(0, screen_height),
-            'size': random.randint(1, 2) # Vary size for a better effect
+            'size': random.randint(1, 2)
         })
     return stars
 
-# Global variable to store and manage the star field state
 star_field_state = {'stars': initialize_star_field(config.SCREEN_WIDTH, config.SCREEN_HEIGHT, STAR_COUNT)}
 
 
@@ -167,7 +166,7 @@ def start_game(level_number=2):
 
     # reset input flags so stale state doesn't persist
     config.moving_left = config.moving_right = config.moving_up = config.moving_down = False
-    config.shooting = config.heavy_shooting = config.rocket = config.laserLine_fire = config.plasma_shooting = False
+    config.shooting = config.heavy_shooting = config.rocket = config.laserLine_fire = config.plasma_shooting = config.ice_shooting = False
     config.score = 0
 
     # clear pending events from last game played
@@ -178,6 +177,7 @@ def start_game(level_number=2):
     scroll_speed = 2
     scroll_y = 0 # background y scroll
     wave_count = 1
+    ice_bullets = []
     pending_spawns = 0 # track how many enemies are left in current wave
 
     # Spawn events (use local event ids so no conflict)
@@ -194,21 +194,15 @@ def start_game(level_number=2):
         if player.health <= 0:
             print("You died, health is: ", player.health, ", with a score of:", config.score)
             
-            # --- START OF DEATH TRANSITION LOGIC (First Check) ---
             mission_complete = config.score >= config.target_score
             outcome_color = "green" if mission_complete else "red"
             
             global transition
-            # *** FIX: Use LevelTransition here with outcome_color ***
             transition = LevelTransition(config.game_window, outcome_color=outcome_color)
-            
-            # Return a temporary state to trigger the transition effect in the main loop
             return "death_transition"
-            # --- END OF DEATH TRANSITION LOGIC ---
         
         draw_scrolling_bg(config.game_window, level_background_list, config.scroll_state, speed=2)
         
-        # 2. Update and Draw the new Fast Star VFX (ADD/REPLACE OLD LOGIC WITH THIS)
         star_vfx.update()
         star_vfx.draw(config.game_window)
 
@@ -321,7 +315,14 @@ def start_game(level_number=2):
             plasma.update()
             plasma.draw()
 
-
+        # ice bullets (only if weapon is enabled for this level)
+        if config.ice_shooting and level_config['weapons']['ice']:
+            player.shoot_ice(enemy_group, ice_bullets)
+        for ice in ice_bullets[:]:
+            ice.update()
+            ice.draw(config.game_window)
+            if not ice.active:
+                ice_bullets.remove(ice)
 
         # heavy laser (only if weapon is enabled for this level)
         heavyLaser_group.draw(config.game_window)
@@ -338,16 +339,11 @@ def start_game(level_number=2):
         if player.health <= 0:
             print("You died, health is: ", player.health, ", with a score of:", config.score)
             
-            # --- START OF DEATH TRANSITION LOGIC (Second Check) ---
             mission_complete = config.score >= config.target_score
             outcome_color = "green" if mission_complete else "red"
             
-            # *** FIX: Use LevelTransition here with outcome_color ***
             transition = LevelTransition(config.game_window, outcome_color=outcome_color)
-            
-            # Return a temporary state to trigger the transition effect in the main loop
             return "death_transition"
-            # --- END OF DEATH TRANSITION LOGIC ---
             
         thruster_vfx.draw(config.game_window)
         
@@ -417,6 +413,7 @@ def start_game(level_number=2):
                 if event.key == pygame.K_s: config.rocket = True
                 if event.key == pygame.K_w: config.laserLine_fire = True
                 if event.key == pygame.K_q: config.plasma_shooting = True
+                if event.key == pygame.K_e: config.ice_shooting = True
                 
                 if event.key == pygame.K_ESCAPE: 
                     return "menu"
@@ -432,6 +429,7 @@ def start_game(level_number=2):
                 if event.key == pygame.K_s: config.rocket = False
                 if event.key == pygame.K_w: config.laserLine_fire = False
                 if event.key == pygame.K_q: config.plasma_shooting = False
+                if event.key == pygame.K_e: config.ice_shooting = False
                 
  
             # _______ Spawn enemy waves ________
@@ -491,7 +489,6 @@ while game_state != "exit":
         selected_level = menu.level_select()
         if isinstance(selected_level, int):
             current_level = selected_level
-            # Use the standard Transition for level warp-in
             transition = Transition(config.game_window) 
             game_state = "transition_in" 
         elif selected_level == "menu":
@@ -513,14 +510,13 @@ while game_state != "exit":
             game_state = "play"
             transition = None
     
-    # --- New Death Transition State ---
     elif game_state == "death_transition":
         config.frameRate.tick(config.FPS)
         
-        # 1. Draw the Background (Bottom Layer)
+        # Draw the Background (Bottom Layer)
         draw_scrolling_bg(config.game_window, level_background_list, config.scroll_state, speed=0) 
         
-        # 2. Draw all Game Objects (Middle Layers) in the correct order
+        # Draw all Game Objects (Middle Layers) in the correct order
         star_vfx.draw(config.game_window)
         thruster_vfx.draw(config.game_window)
 
@@ -549,8 +545,7 @@ while game_state != "exit":
         menu.drawText(f'Waves: {wave_count}', config.font, config.RED, 10, 870) 
         
         
-        # 3. Run and Draw the Transition (TOP LAYER)
-        # We now know 'transition' is a LevelTransition object created in start_game
+        # Run and Draw the Transition (TOP LAYER)
         is_running = transition.warp_out() 
         transition.draw() 
         
@@ -573,7 +568,6 @@ while game_state != "exit":
             transition = None
             game_state = "result_screen"
             
-    # --- Existing Result Screen State ---
     elif game_state == "result_screen":
         game_state = menu.result_screen()
 

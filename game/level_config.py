@@ -11,7 +11,8 @@ LEVELS = {
             'heavy_laser': True,     # D key  
             'rocket': True,          # S key
             'laser_line': False,     # W key
-            'plasma': False          # Q key
+            'plasma': False,         # Q key
+            'ice': True              # E key
         },
         
         # enemy types that can spawn
@@ -47,7 +48,8 @@ LEVELS = {
             'heavy_laser': True,     # D key
             'rocket': True,          # S key
             'laser_line': True,      # W key
-            'plasma': True           # Q key
+            'plasma': True,          # Q key
+            'ice': False             # E key
         },
         
         # enemy types that can spawn
