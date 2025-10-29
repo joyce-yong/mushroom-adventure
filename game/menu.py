@@ -82,11 +82,9 @@ def level_select():
         dt = clock.tick(60) / 1000.0
         time_ms = pygame.time.get_ticks()
 
-        # --- draw sci-fi background ---
-        config.game_window.fill((10, 10, 25))  # base dark color
+        config.game_window.fill((10, 10, 25))
         galaxy.update(dt, time_ms)
         galaxy.draw(config.game_window, time_ms)
-        
 
         title_surface = config.title_font.render(title_text, True, config.WHITE)
         title_rect = title_surface.get_rect(center=(config.screen_width // 2, title_y))
@@ -95,7 +93,7 @@ def level_select():
         x_offset = x_start + (button_width / 2)
         
         
-        float_offset = int(math.sin(time_ms * 0.002) * 10)  # smooth float motion
+        float_offset = int(math.sin(time_ms * 0.002) * 10)  # float motion
         level1_pressed, level1_hovered = draw_button("Level 1", x_offset, y_pos + float_offset, config.WHITE, config.CAYAN)
         x_offset += button_width + gap
         level2_pressed, level2_hovered = draw_button("Level 2", x_offset, y_pos + float_offset, config.WHITE, config.CAYAN)
@@ -151,10 +149,7 @@ def level_select():
 
 # ___ Story screen ___
 def show_story():
-    # story_bg = pygame.Surface((config.screen_width, config.screen_height))
-    # story_bg.fill((12, 20, 40))
     nebula = BioNebula(config.screen_width, config.screen_height, num_spores=80)
-
 
     title_font = config.title_font
     story_font = config.story_font
@@ -193,7 +188,6 @@ def show_story():
 
     showing_story = True
     while showing_story:
-        # config.game_window.blit(story_bg, (0, 0))
         dt = clock.tick(60) / 1000.0
         nebula.update(dt)
         nebula.draw(config.game_window)
@@ -258,7 +252,7 @@ def controls():
 
     title_text = "CONTROLS"
     title_y = int(config.screen_height * 0.15)
-    # ... (rest of variable setup)
+
     controls_start_y = int(config.screen_height * 0.35)
     line_height = 55
     actions_x = config.screen_width // 2 - 50
@@ -285,12 +279,10 @@ def controls():
     while showing:
         dt = clock.tick(60) / 1000.0 
         
-        # Update the Background
-        config.game_window.fill((10, 20, 40)) # Base dark color
-        grid_bg.update(dt) # Update the pulse time
-        grid_bg.draw(config.game_window) # Draw the grid
+        config.game_window.fill((10, 20, 40))
+        grid_bg.update(dt)
+        grid_bg.draw(config.game_window)
 
-        # Draw UI Elements (Title, Text, etc.)
         title_surface = config.title_font.render(title_text, True, config.WHITE) 
         title_rect = title_surface.get_rect(center=(config.screen_width // 2, title_y))
         config.game_window.blit(title_surface, title_rect)
@@ -313,8 +305,6 @@ def controls():
         instruction_rect = instruction_surface.get_rect(center=(config.screen_width // 2, instruction_y))
         config.game_window.blit(instruction_surface, instruction_rect)
 
-
-        # 3. Draw Cursor & Spores
         for spore in cursor.spores[:]:
             if not spore.update():
                 cursor.spores.remove(spore)
@@ -326,7 +316,6 @@ def controls():
 
         pygame.display.flip()
         
-        # 4. Handle Events
         for event in pygame.event.get():
              if event.type == pygame.QUIT:
                  pygame.quit()
@@ -351,11 +340,10 @@ def menu_screen():
     cursor = Cursor("img/cursor", frame_rate=120)
     cursor.load_frames("img/cursor", scale_factor=1.5)
 
-    # Initialize all VFX systems
+    # initialize VFX
     comet_vfx = CometStarVFX(config.screen_width, config.screen_height, num_comets=8)
     button_vfx = ButtonGlowVFX()
 
-    # Initialize button_positions to fix UnboundLocalError
     button_positions = {} 
 
     while in_menu:
@@ -368,30 +356,24 @@ def menu_screen():
         time_ms = pygame.time.get_ticks()
         float_offset = int(math.sin(time_ms * 0.003) * 5)
         
-        # 1. DRAW BACKGROUND LAYERS
         config.game_window.blit(menu_images[idx], (0, 0))
 
-        # 2. Draw Semi-transparent overlay for trailing blur effect
         overlay = pygame.Surface((config.screen_width, config.screen_height))
         overlay.fill((10, 10, 25))
         overlay.set_alpha(40) 
         config.game_window.blit(overlay, (0, 0))
 
-        # 3. Draw comet/star VFX (Background animation)
         comet_vfx.update()
         comet_vfx.draw(config.game_window)
 
         
-        # --- BUTTON LOGIC AND GLOW LAYER SETUP ---
-        
-        # A. CALCULATE & STORE BUTTON POSITIONS (Needed before drawing the glow)
         num_buttons = 4
         base_y_pos = int(config.screen_height * 0.80) 
         total_width = int(config.screen_width * 0.75)
         x_spacing = total_width // (num_buttons - 1) if num_buttons > 1 else 0
         x_start = int(config.screen_width - total_width) // 2
         
-        button_positions = {} # Reset for the current frame
+        button_positions = {} # reset for the current frame
         x_offset = x_start
         
         # Store Start position
@@ -412,38 +394,36 @@ def menu_screen():
         quit_offset = int(math.sin(time_ms * 0.003 + 1.5) * 5)
         button_positions["Quit"] = (x_offset, base_y_pos + quit_offset)
 
-        # B. UPDATE & DRAW GLOW VFX (MUST BE DRAWN BEFORE THE BUTTONS)
+        # Update and draw glow vfx
         button_vfx.set_button_coords(button_positions)
         button_vfx.update() 
-        button_vfx.draw(config.game_window) # <-- GLOW DRAWN HERE
+        button_vfx.draw(config.game_window)
         
-        # C. DRAW BUTTONS (Foreground layer)
-        x_offset = x_start # Reset offset to draw the buttons
+        x_offset = x_start
 
         # Start button
         start_pressed, start_hovered = draw_button("Start", x_offset, base_y_pos + float_offset, config.WHITE, config.CAYAN)
         if start_hovered:
-            button_vfx.burst_particles("Start", count=80) # <-- Burst on hover!
+            button_vfx.burst_particles("Start", count=80)
         x_offset += x_spacing
 
         # Story button
         story_pressed, story_hovered = draw_button("Story", x_offset, base_y_pos + story_offset, config.WHITE, config.CAYAN)
         if story_hovered:
-            button_vfx.burst_particles("Story", count=80) # <-- Burst on hover!
+            button_vfx.burst_particles("Story", count=80)
         x_offset += x_spacing
 
         # Controls button
         controls_pressed, controls_hovered = draw_button("Controls", x_offset, base_y_pos + controls_offset, config.WHITE, config.CAYAN)
         if controls_hovered:
-            button_vfx.burst_particles("Controls", count=80) # <-- Burst on hover!
+            button_vfx.burst_particles("Controls", count=80)
         x_offset += x_spacing
 
         # Quit button
         quit_pressed, quit_hovered = draw_button("Quit", x_offset, base_y_pos + quit_offset, config.WHITE, (255, 60, 60))
         if quit_hovered:
-            button_vfx.burst_particles("Quit", count=80) # <-- Burst on hover!
+            button_vfx.burst_particles("Quit", count=80)
         
-        # --- END OF BUTTON LOGIC ---
         
         # handle buttons actions and menu state
         if start_pressed:
@@ -463,7 +443,6 @@ def menu_screen():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 cursor.spawn_spores(pygame.mouse.get_pos())
 
-        # Cursor VFX (Must be the final drawing layer)
         for spore in cursor.spores[:]:
             if not spore.update():
                 cursor.spores.remove(spore)
