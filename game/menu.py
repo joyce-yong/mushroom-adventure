@@ -492,14 +492,12 @@ def result_screen():
         title_color = config.CAYAN
         background_image = load_result_bg('win.png')
 
-        # initialize fungal spore vfx
-        win_colors = [config.CAYAN, config.YELLOW, config.WHITE]
+        # initialize fungal spore vfx (rising)
         fungalspore_vfx = FungalSporesVFX(
             config.screen_width, 
             config.screen_height, 
             direction = "rising",
-            color_theme = win_colors,
-            num_spores = 200
+            num_spores = 80
         )
         # initialize haze vfx
         haze_vfx = GradientHaze( 
@@ -523,14 +521,12 @@ def result_screen():
         title_color = config.RED
         background_image = load_result_bg('lose.png')
 
-        # initialize fungal spore vfx
-        lose_colors = [config.PURPLE, config.RED, config.BLACK]
+        # initialize fungal spore vfx (falling)
         fungalspore_vfx = FungalSporesVFX(
             config.screen_width, 
             config.screen_height, 
             direction = "falling",
-            color_theme = lose_colors,
-            num_spores = 200
+            num_spores = 80
         )
         # initialize haze vfx
         haze_vfx = GradientHaze( 
