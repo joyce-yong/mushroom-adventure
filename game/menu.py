@@ -6,12 +6,11 @@ from vfx_transition import Transition
 from vfx_cybergrid import CyberGrid
 from vfx_bionebula import BioNebula
 from vfx_cometstar import CometStarVFX
-from vfx_glowparticle import GlowParticle
 from vfx_buttonglow import ButtonGlowVFX
-
 from vfx_sparkle import SparkleVFX
 from vfx_haze import GradientHaze
 from vfx_fungalspores import FungalSporesVFX
+from vfx_textglow import GlowTextVFX
 
 # ___ Menu Setup ___
 menu_images = []
@@ -486,6 +485,7 @@ def result_screen():
     haze_vfx = None
     sparkle_vfx = None
     fungalspore_vfx = None
+    title_glow_vfx = None
 
     if is_win:
         title_text = "MISSION COMPLETED"
@@ -516,6 +516,13 @@ def result_screen():
             color=config.WHITE, 
             speed_mod = 0.005
         )
+        # initialize title glow vfx
+        title_glow_vfx = GlowTextVFX(
+            pygame.Rect(0, 0, 1, 1), 
+            config.CAYAN,
+            spawn_rate = 0.2, 
+            particle_count_max = 2
+        )
     else:
         title_text = "MISSION FAILED"
         title_color = config.RED
@@ -537,6 +544,13 @@ def result_screen():
             max_alpha = 120,
             fade_speed = 0.002
         )
+        # initialize title glow vfx
+        title_glow_vfx = GlowTextVFX(
+            pygame.Rect(0, 0, 1, 1),
+            config.RED,
+            spawn_rate = 0.2, 
+            particle_count_max = 2
+        )
 
     title_y = int(config.screen_height * 0.20)
     
@@ -557,19 +571,6 @@ def result_screen():
 
         # background
         config.game_window.blit(background_image, (0, 0))
-
-        # vfx update
-        if sparkle_vfx:
-            sparkle_vfx.update(dt)
-            sparkle_vfx.draw(config.game_window)
-
-        if haze_vfx:
-            haze_vfx.update(dt)
-            haze_vfx.draw(config.game_window)
-        
-        if fungalspore_vfx:
-            fungalspore_vfx.update(dt)
-            fungalspore_vfx.draw(config.game_window)
         
         # draw title
         title_surface = config.title_font.render(title_text, True, title_color)
@@ -585,6 +586,24 @@ def result_screen():
         instruction_surface = config.fontLarge.render(instruction_text, True, config.WHITE)
         instruction_rect = instruction_surface.get_rect(center=(config.screen_width // 2, instruction_y))
         config.game_window.blit(instruction_surface, instruction_rect)
+
+        # vfx update
+        if sparkle_vfx:
+            sparkle_vfx.update(dt)
+            sparkle_vfx.draw(config.game_window)
+
+        if haze_vfx:
+            haze_vfx.update(dt)
+            haze_vfx.draw(config.game_window)
+        
+        if fungalspore_vfx:
+            fungalspore_vfx.update(dt)
+            fungalspore_vfx.draw(config.game_window)
+
+        if title_glow_vfx:
+            title_glow_vfx.rect = title_rect
+            title_glow_vfx.update(dt)
+            title_glow_vfx.draw(config.game_window)
 
         # update and draw cursor
         for spore in cursor.spores[:]:
