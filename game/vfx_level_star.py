@@ -4,8 +4,6 @@ import config
 
 class FastStarVFX:
     
-    # --- Configuration for Star Layers ---
-    
     # Far Layer (Distant depth)
     FAR_COUNT = 180
     FAR_SPEED_MIN = 0.005
@@ -82,16 +80,15 @@ class FastStarVFX:
     def update(self):
         """Updates the position and flicker state of all stars in both layers."""
         for star in self.stars:
-            # 1. Update position
             star['y'] += star['speed']
             
-            # 2. Blinking logic (unchanged)
+            # Blinking logic
             star['flicker_timer'] -= 1
             if star['flicker_timer'] <= 0:
                 star['is_visible'] = not star['is_visible']
                 star['flicker_timer'] = random.randint(10, 120)
             
-            # 3. Reset stars that scroll off the bottom
+            # Reset stars that scroll off the bottom
             if star['y'] > self.height:
                 self._reset_star(star)
 
@@ -104,18 +101,13 @@ class FastStarVFX:
                 center_y = int(star['y'])
                 
                 if star['layer'] == 'near':
-                    # Draw as a vertical speed streak (short line segment)
-                    # Length of the streak is based on speed for better effect
                     streak_length = int(star['speed'] * 0.8) 
                     
-                    # Define the start and end points of the line
                     start_point = (center_x, center_y)
                     end_point = (center_x, center_y + streak_length)
                     
-                    # Draw a vertical line that represents the speed streak
                     pygame.draw.line(surface, color, start_point, end_point, star['size'])
 
                 else: # 'far' layer remains a single circle
                     # Draw as a dim, twinkling point
                     pygame.draw.circle(surface, color, (center_x, center_y), star['size'])
-# --- End of FastStarVFX class (vfx_faststar.py) ---

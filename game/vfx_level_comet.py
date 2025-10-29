@@ -2,7 +2,7 @@ import pygame
 import math
 import random
 
-# Colors (No change, still good)
+# Colors
 COMET_COLOR = (255, 255, 255)
 TAIL_COLORS = [
     (180, 220, 255),  # Light Blue/Cyan
@@ -12,7 +12,7 @@ TAIL_COLORS = [
     (255, 240, 200)   # Light Gold
 ]
 
-# Particle class (No changes needed)
+# Particle class
 class Particle:
     def __init__(self, x, y, angle, speed, size, life, color):
         self.x = x
@@ -80,27 +80,18 @@ class Comet:
         if self.spawn_delay > 0:
             self.spawn_delay -= 1
             return
-
-        # The effective speed of the comet relative to the game's scrolling frame
-        # We want the comet to move at its base speed + the scroll speed in the Y direction
-        # This makes it feel like it's moving *through* the scrolling background
         
         # Calculate individual X and Y components of the comet's movement
         dx = math.cos(self.angle) * self.base_speed
         dy = math.sin(self.angle) * self.base_speed
 
         self.x += dx
-        # Apply the comet's own vertical movement PLUS the scroll_speed
-        # This makes it appear to move faster than the background vertically,
-        # creating the illusion of moving past the player.
         self.y += (dy + scroll_speed) 
         
         # Create smooth trailing particles
         self.timer += 1
         if self.timer % 1 == 0:
             for _ in range(2): 
-                # Particle angle slightly trails opposite the general comet direction
-                # (i.e., upwards and slightly left/right relative to comet's head)
                 self.trail.append(Particle(
                     self.x, self.y,
                     random.uniform(math.radians(200), math.radians(250)), # A range of upward-backward angles
@@ -111,11 +102,9 @@ class Comet:
                 ))
 
         # Update particles, keeping only the alive ones
-        # Also apply the scroll_speed to particles so they move consistently with the comet head
         self.trail = [p for p in self.trail if p.update()]
         for p in self.trail:
             p.y += scroll_speed # Particles also need to scroll down with the background relative to their own movement
-
 
         # Reset when completely off-screen (below and to the right)
         if self.x > self.screen_width + 100 or self.y > self.screen_height + 100:
@@ -125,7 +114,7 @@ class Comet:
         if self.spawn_delay > 0:
             return
 
-        # Draw trail first for correct visual layering
+        # Draw trail
         for p in self.trail:
             p.draw(surface)
 

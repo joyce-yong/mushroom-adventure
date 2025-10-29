@@ -46,7 +46,6 @@ song1_path = os.path.join('audio', 'Dark Techno EBM Background Music.mp3')
 play_music(song1_path)
 
 
-
 def draw_scrolling_bg(surface, background_list, state, speed=3):
     screen_width = surface.get_width()
     screen_height = surface.get_height()
@@ -77,7 +76,6 @@ def draw_scrolling_bg(surface, background_list, state, speed=3):
             surface.blit(img, (0, max(y_pos, 0)), area=source_rect)
 
 
-
 def spawn_enemy(level_config):
     x = random.randint(80, config.SCREEN_WIDTH - 80)
     y = -80 # spawn above screen
@@ -97,6 +95,7 @@ STAR_COUNT = 150 # number of fast-moving stars
 STAR_SPEED = 10 # star scroll speed
 STAR_COLOR = config.WHITE
 
+
 def initialize_star_field(screen_width, screen_height, count):
     stars = []
     for _ in range(count):
@@ -108,7 +107,6 @@ def initialize_star_field(screen_width, screen_height, count):
     return stars
 
 star_field_state = {'stars': initialize_star_field(config.SCREEN_WIDTH, config.SCREEN_HEIGHT, STAR_COUNT)}
-
 
 
 # ____ main ____
@@ -131,7 +129,6 @@ def start_game(level_number=2):
     
     # Load background
     level_background_list = load_background_images(level_config)
-
 
     # --- Ensure global sprite groups exist and are fresh (use .empty() to keep same Group objects) ---
     enemy_group.empty()
@@ -237,7 +234,6 @@ def start_game(level_number=2):
             bh.draw(config.game_window)
 
 
- 
         # __ Explosions for death __
         for exp in explosion_group:
             explosion_group.update()
@@ -279,8 +275,6 @@ def start_game(level_number=2):
                 enemy.ai_enemy7_shoot(player, enemy_group, asteroid_group, rockets_group, plasma_group)
 
             
-
-
         # enemy laserline
         for beam in enemy_beam_group:
             beam.update(asteroid_group, enemy_group, player, blackholes_group)
@@ -368,7 +362,6 @@ def start_game(level_number=2):
         menu.drawText(f'Waves: {wave_count}', config.font, config.RED, 10, 870)
 
 
-
         if getattr(config, "motherShip_boss_active", False):
             boss_present = any(e.character_type == "enemy8" for e in enemy_group) # keep track if there is a carrier mothership in the group(exist)
             if boss_present:
@@ -377,7 +370,6 @@ def start_game(level_number=2):
             elif not boss_present and config.mothership_wave < wave_count : # if now carrier boss and we are in diffrent wave than boss spawn wave
                 config.motherShip_boss_active = False
         
-
 
         # music switching logic
         if not is_paused:
@@ -401,8 +393,7 @@ def start_game(level_number=2):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 playing = False
-                
-                
+                      
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT: config.moving_left = True 
                 if event.key == pygame.K_RIGHT: config.moving_right = True
@@ -418,7 +409,6 @@ def start_game(level_number=2):
                 if event.key == pygame.K_ESCAPE: 
                     return "menu"
                 
-            
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT:  config.moving_left = False
                 if event.key == pygame.K_RIGHT: config.moving_right = False

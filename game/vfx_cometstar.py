@@ -91,7 +91,7 @@ class Comet:
 
 
 class CometStarVFX:
-    def __init__(self, screen_width, screen_height, num_comets=8, star_density=5): # <-- Increased star_density here
+    def __init__(self, screen_width, screen_height, num_comets=8, star_density=5):
         self.screen_width = screen_width
         self.screen_height = screen_height
         self.comets = [Comet(screen_width, screen_height) for _ in range(num_comets)]
@@ -111,11 +111,11 @@ class CometStarVFX:
             comet.update()
 
     def draw(self, surface):
-        # 1. Draw Comets
+        # Draw Comets
         for comet in self.comets:
             comet.draw(surface)
 
-        # 2. Subtle Stars Twinkling (Now more obvious!)
+        # Subtle Stars Twinkling
         for _ in range(self.star_density): 
             sx = random.randint(0, self.screen_width)
             sy = random.randint(0, self.screen_height)

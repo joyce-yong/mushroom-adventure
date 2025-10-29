@@ -12,10 +12,10 @@ class Asteroid(pygame.sprite.Sprite):
             - ice: force ice type fragments
             - junk: force junk fragments
         """
-        self.character_type = "asteroid" # use to check if it is our object asteroid/comet/junk
+        self.character_type = "asteroid"
+
         # load random asteroid image
-        
-        # check object types ice, junk, rock
+        # check object types: ice, junk, rock
         if junk is None and not is_fragment:
             junk = random.randint(1, 3) == 1
         self.space_junk = junk
@@ -54,14 +54,14 @@ class Asteroid(pygame.sprite.Sprite):
         self.fragment_count = fragment_count
         self.base_damage = 80
         self.damage = int(self.base_damage/ fragment_count)
-        
+
+
     def update(self, asteroid_group, player):
-        
         # move asteroid
         self.rect.x += self.velocity_x
         self.rect.y += self.velocity_y
         
-        # Collision with player
+        # collision with player
         if self.rect.colliderect(player.rect):
 
             if player.shield > 0:
@@ -72,7 +72,7 @@ class Asteroid(pygame.sprite.Sprite):
             print("Health: ", player.health, ", Shield: ", player.shield )
             return
         
-        # Check health
+        # check health
         if self.health <= 0:
             self.break_apart(asteroid_group, rocket_hit=False)
             # add points to score 
@@ -85,8 +85,6 @@ class Asteroid(pygame.sprite.Sprite):
             self.kill()
             return
             
-            
-    
     
     # create break apart method
     def break_apart(self, asteroid_group, rocket_hit=False):
@@ -137,8 +135,6 @@ class Asteroid(pygame.sprite.Sprite):
 
 
 
-
-
 # _____ Black hole / quark star ____
 class BlackHole(pygame.sprite.Sprite):
     """ - Spinning dense stars blackhole/quarkStar
@@ -171,7 +167,7 @@ class BlackHole(pygame.sprite.Sprite):
         if self.quark_chance == 1:
             self.quark_star = True
             
-        # -- load frames from folder, create exception
+        # load frames from folder
         self.frames = []
         folder = "img/quarkstar" if self.quark_star else "img/blackhole" 
         if os.path.isdir(folder):
@@ -224,7 +220,8 @@ class BlackHole(pygame.sprite.Sprite):
         self.rotation_speed = rotation_speed
         # center vector (update each frame)
         self.center = pygame.math.Vector2(self.rect.center)
-        
+
+
     def advance_frame(self):
         now = pygame.time.get_ticks()
         if now - self.last_frame_time >= self.frame_rate_ms:
@@ -249,7 +246,6 @@ class BlackHole(pygame.sprite.Sprite):
         self.bh_pos.y += self.velocity_y
         self.rect.center = (int(self.bh_pos.x), int(self.bh_pos.y))
         self.center = (pygame.math.Vector2(self.rect.center))
-        
         
         # kill object if it is off screen
         if (self.rect.top > config.SCREEN_HEIGHT * 1.3 or
@@ -283,7 +279,6 @@ class BlackHole(pygame.sprite.Sprite):
         
         char_type = getattr(sprite, 'character_type', None) 
         
-        
         if char_type == 'player':
             range_limit = self.PLAYER_ATTRACCTION_RANGE
         elif char_type == 'asteroid':
@@ -296,9 +291,9 @@ class BlackHole(pygame.sprite.Sprite):
                 
     def apply_to_sprite(self, sprite, group=None):
         
-        # enemy 8 has anti black hole tech so we skip it
+        # enemy 8 has anti black hole tech so skip it
         if getattr(sprite, 'character_type', None) == 'enemy8':
-            return # skip logic for enemy 8
+            return
         
         # ignore dead sprites 
         if hasattr(sprite, 'alive') and not sprite.alive:
@@ -313,7 +308,6 @@ class BlackHole(pygame.sprite.Sprite):
             sprite.bh_pos = pygame.math.Vector2(sprite.rect.center)
             
         
-            
         spr_center = pygame.math.Vector2(sprite.bh_pos)
         vector = self.center - spr_center
         distance = vector.length()
@@ -337,7 +331,7 @@ class BlackHole(pygame.sprite.Sprite):
         # Attraction strength
         char_type = getattr(sprite, 'character_type', None)
         if char_type == 'player':
-            strength_multiplier = 1.8 # strong player attraction
+            strength_multiplier = 1.8
             range_limit = self.PLAYER_ATTRACCTION_RANGE
         elif char_type == 'asteroid':
             strength_multiplier = 0.04
@@ -368,9 +362,6 @@ class BlackHole(pygame.sprite.Sprite):
         except Exception:
             pass
         
-        
-        
-        
-        
+         
     def draw(self, surface):
         surface.blit(self.image, self.rect)

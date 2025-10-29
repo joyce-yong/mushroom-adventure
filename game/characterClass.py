@@ -23,20 +23,17 @@ class Character(pygame.sprite.Sprite):
         self.max_shield = self.shield # set max shield to prevent shield from overflowing
         self.alive = True
         
-        
         # for enemies
         self.spawn_time = pygame.time.get_ticks()
         self.start_delay = 4000
         self.phase = 'enter'
         self.target_y = 50
         
-        
         # load object image
         img = pygame.image.load(f'img/{self.character_type}/Idle/0.png').convert_alpha()
         self.image = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
         self.rect = self.image.get_rect()
         self.rect.center = (character_x, character_y)
-
 
         # laser shooting attributes
         self.lasers = pygame.sprite.Group()
@@ -47,7 +44,6 @@ class Character(pygame.sprite.Sprite):
         self.heavy_cooldown = 300
         self.last_heavy_shot = 0
         
-
         # flash hit
         self.prev_health = self.health
         self.flash_time = 100 # in ms
@@ -69,7 +65,7 @@ class Character(pygame.sprite.Sprite):
             
         self.flash_index = 0
 
-        # ___ Load shield images ___
+        # ___ load shield images ___
         self.shield_images = []
         for i in range(2): # 2 pictures to loop
             img = pygame.image.load(f'img/{self.character_type}/shield/{i}.png').convert_alpha()
@@ -93,7 +89,6 @@ class Character(pygame.sprite.Sprite):
         # freeze status
         self.frozen_until = 0
         self.is_frozen = False
-
 
 
     # create custom draw method for characters
@@ -122,7 +117,6 @@ class Character(pygame.sprite.Sprite):
         config.game_window.blit(pygame.transform.flip(img, self.flip, False), self.rect)
 
         
-        
     # update character class objects
     def update(self, player):
         self.check_alive(player)
@@ -136,12 +130,9 @@ class Character(pygame.sprite.Sprite):
             else:
                 self.is_frozen = False
         
-    
-
 
     # check if player and ai is dead or alive
     def check_alive(self, player):
-        
         if self.health <= 0:
             if self.alive: # we transition from alive to dead
                 self.health = 0
@@ -149,7 +140,7 @@ class Character(pygame.sprite.Sprite):
                 self.alive = False
                 self.kill()
 
-                # Trigger explosion of dead enemy ship
+                # trigger explosion of dead enemy ship
                 explosion = Explosion(self.rect.center, explosion_frames, frame_duration=80)
                 explosion_group.add(explosion)
 
@@ -168,8 +159,6 @@ class Character(pygame.sprite.Sprite):
                     # clamp values added
                     player.shield = min(player.shield, player.max_shield)
                     player.health = min(player.health, player.max_health)
-
-
 
 
     # flash damage when hit
@@ -193,8 +182,6 @@ class Character(pygame.sprite.Sprite):
             config.channel_9.play(config.shield_fx)
             self.shield_start = pygame.time.get_ticks()
         self.prev_shield = self.shield
-
-        # change what to show/ armor/shield damage
         
         # Hanlde flashing/shield animation
         if flashing:
@@ -205,8 +192,6 @@ class Character(pygame.sprite.Sprite):
             self.image = self.shield_images[frame]
         else: # no damage taken
             self.image = self.original_image
-
-
 
 
     # movement method for player or ai if you choose
@@ -225,21 +210,14 @@ class Character(pygame.sprite.Sprite):
         if moving_down:
             dy = 1    
             
-        
         # normalize diagonal speed
         if dx != 0 and dy != 0:
             dx *= 0.7071
             dy *= 0.7071
 
-
-
-
-
         # apply movement on rect
         self.rect.x += dx * self.velocity
         self.rect.y += dy * self.velocity
-
-
 
         # clamp player on screen
         if self.rect.left < 0:
@@ -260,10 +238,7 @@ class Character(pygame.sprite.Sprite):
         if self.rect.top < -1:
             self.kill()
 
-
         # end of movement method 
-
-
 
 
     # AI enemies 
@@ -289,7 +264,6 @@ class Character(pygame.sprite.Sprite):
                 self.kill()
                 
                 
-
     ##### basic laser #####
 
     # laser shoot check method for player and enemy
@@ -315,7 +289,6 @@ class Character(pygame.sprite.Sprite):
             config.laser_fx.play()
 
 
-
     # ai check for collision of vision
     def ai_shoot(self, player, enemy_group, asteroid_group):
         """Only enemy 3 and enemy 9 can shoot this laser"""
@@ -337,7 +310,7 @@ class Character(pygame.sprite.Sprite):
         )    
         # if player is inside detection rect zone
         if detection_rect.colliderect(player.rect): # check detection rect and player rect overlapping
-            # Temporarily override cooldown (3 times slower than player)
+            # temporarily override cooldown (3 times slower than player)
             original_cooldown = self.laser_cooldown
             self.laser_cooldown = original_cooldown * 3
             
@@ -352,7 +325,6 @@ class Character(pygame.sprite.Sprite):
             self.laser_cooldown = original_cooldown
 
 
-
     # update lasers fired by characters
     def update_lasers(self):
         for laser in self.lasers:
@@ -360,17 +332,13 @@ class Character(pygame.sprite.Sprite):
             laser.draw()
 
 
-
     # ____ Heavy laser ____
-
     def shoot_heavy(self, target_player=None, target_enemy_group=None, asteroid_group=None):
         from projectiles import HeavyLaser
 
         if target_enemy_group is None or asteroid_group is None:
             return
-        
-
-        """Fire heavy lasers """ 
+         
         now = pygame.time.get_ticks()
         if now - getattr(self, "last_heavy_shot", 0) < self.heavy_cooldown:
             return
@@ -427,8 +395,6 @@ class Character(pygame.sprite.Sprite):
             self.last_heavy_shot = now
 
 
-
-
     # rocket check
     def shoot_rocket(self, target_group, rocket_group, asteroid_group):
         current_time = pygame.time.get_ticks()
@@ -444,8 +410,6 @@ class Character(pygame.sprite.Sprite):
             self.last_rocket_time = current_time
 
             config.channel_4.play(config.rockets_fx)
-
-
 
 
     # ai shoots
@@ -474,7 +438,7 @@ class Character(pygame.sprite.Sprite):
             if self.character_type == "enemy2":
                 rocket_cooldown = 3000 # 3 sec
             else: # other enemies
-                rocket_cooldown = 2000 # 2 sec 1 faster  
+                rocket_cooldown = 2000 # 2 sec  
                 
             if current_time - getattr(self, "last_rocket_time", 0) >= rocket_cooldown:
                 self.shoot_rocket(
@@ -483,9 +447,6 @@ class Character(pygame.sprite.Sprite):
                     asteroid_group
                 )
                 self.last_rocket_time = current_time
-
-
-
 
 
     def ai_shoot_enemy5(self, player, enemy_group, asteroid_group):
@@ -526,10 +487,9 @@ class Character(pygame.sprite.Sprite):
                 laser.prev_center = pygame.math.Vector2(laser.rect.center)
                 self.lasers.add(laser)
             self.last_shot_time = now # assign time to reset check to current time 
-            config.laser_fx.play() # play over this sound this way
+            config.laser_fx.play()
 
-            
-        # Heavy lasers
+        # heavy lasers
         if now - getattr(self, "last_heavy_shot", 0) >= self.heavy_cooldown:
             offset_y = 40
             offset_x = 20
@@ -543,7 +503,6 @@ class Character(pygame.sprite.Sprite):
                 
             self.last_heavy_shot = now # reset time counter
             config.channel_3.play(config.heavyLaser_fx)
-
 
 
     # laser rapid fire for enemy method
@@ -611,7 +570,6 @@ class Character(pygame.sprite.Sprite):
                         line.trigger(False)
 
 
-
     def shoot_plasma(self, target_group, asteroid_group, plasma_group):
         from projectiles import Plasma
         
@@ -639,7 +597,6 @@ class Character(pygame.sprite.Sprite):
             config.channel_12.play(config.plasma_fx)
 
 
-    
     def shoot_ice(self, enemy_group, ice_bullets_list):
         from projectiles import IceBullet
         
@@ -655,10 +612,8 @@ class Character(pygame.sprite.Sprite):
             
             self.last_ice_time = now
             
-            #if hasattr(config, "ice_shoot_fx") and hasattr(config, "channel_13"):
             config.channel_13.set_volume(0.5)
             config.channel_13.play(config.ice_shoot_fx)
-            
             
             
     def ai_shoot_plasma(self, player, asteroid_group, plasma_group):
@@ -700,7 +655,6 @@ class Character(pygame.sprite.Sprite):
                 config.channel_12.play(config.plasma_fx)
 
 
-
     def ai_enemy7_shoot(self, player, enemy_group, asteroid_group, rockets_group, plasma_group):
         """
         - 2 plasma bolts
@@ -731,7 +685,7 @@ class Character(pygame.sprite.Sprite):
         rocket_cooldown = self.rocket_cooldown * 2
         laser_cooldown = self.laser_cooldown * 2
         
-        # -- fire plasma --
+        # fire plasma
         if now - getattr(self, "last_plasma_time", 0) >= plasma_cooldown:
             from projectiles import Plasma
             
@@ -745,7 +699,6 @@ class Character(pygame.sprite.Sprite):
             self.last_plasma_time = now
             config.channel_12.play(config.plasma_fx) 
                        
-       
         # rockets
         if now - getattr(self, "last_rocket_time", 0) >= rocket_cooldown:
             from projectiles import Rocket
@@ -759,7 +712,6 @@ class Character(pygame.sprite.Sprite):
                 rockets_group.add(rocket)
             self.last_rocket_time = now    
             config.channel_5.play(config.rockets_fx)
-            
             
         # laser    
         if now - getattr(self, "last_shot_time", 0) >= laser_cooldown:
@@ -777,17 +729,15 @@ class Character(pygame.sprite.Sprite):
 
 
 
-
 class HealthBar():
-    
     def __init__(self, healthBar_x, healthBar_y, health, max_health):
         self.healthBar_x = healthBar_x
         self.healthBar_y = healthBar_y
         self.health = health
         self.max_health = health
         
+
     def draw(self, health, shield=False):
-        
         from config import game_window, BLACK, CAYAN, WHITE, RED, GREEN
         self.health = health
         self.shield = shield
@@ -803,8 +753,6 @@ class HealthBar():
             pygame.draw.rect(game_window, RED, (self.healthBar_x + 50, self.healthBar_y, 170, 6))
             pygame.draw.rect(game_window, GREEN, (self.healthBar_x + 50, self.healthBar_y, 170 * ratio, 6))
 
-        
-            
         
 
 explosion_frames = []
@@ -829,6 +777,7 @@ class Explosion(pygame.sprite.Sprite):
         self.image = self.frames[self.index]
         self.rect = self.image.get_rect(center=center)
         
+
     # custom update method
     def update(self):
         now = pygame.time.get_ticks()
@@ -855,7 +804,6 @@ class Mothership(Character):
     
     def __init__(self, ship_x, ship_y, scale=0.2, velocity=2.5, extra_scale=0.2):
         super().__init__("enemy8", ship_x, ship_y, scale, velocity)
-        
         
         config.channel_1.play(config.mothership_fx)
         
@@ -887,12 +835,10 @@ class Mothership(Character):
         self.screen_h = config.SCREEN_HEIGHT
     
 
-
     def update(self, player):
         # move
         self.rect.x += int(self.vx)
         self.rect.y += int(self.vy)
-        
         
         # bounce off borders to stay on screen
         if self.rect.left <= 0:
@@ -916,7 +862,6 @@ class Mothership(Character):
             max_speed = max(1.2, self.velocity * 2.0)
             self.vx = max(-max_speed, min(max_speed, self.vx))
             self.vy = max(-max_speed, min(max_speed, self.vy))
-            
             
         # spawn ufo fighters  
         now = pygame.time.get_ticks()
@@ -950,6 +895,7 @@ class Mothership(Character):
         # ensure fighter starts inside the visible region when spawned
         fighter.rect.clamp_ip(pygame.Rect(0, 0, self.screen_W, self.screen_h))
         enemy_group.add(fighter)
+
 
 
 # fighter class for small craft out of hangers
@@ -988,7 +934,6 @@ class Fighter(Character):
             self.rect.bottom = self.screen_h
             self.vy = -abs(self.vy)
         
-        
         # change direction randomly every now and then
         if random.random() < 0.02:
             self.vx += random.uniform(-1.2, 1.2)
@@ -1004,7 +949,6 @@ class Fighter(Character):
                 
             self.vx = max(-max_speed, min(max_speed, self.vx))
             self.vy = max(-max_speed, min(max_speed, self.vy))
-            
             
         # call update and ai shoot methods like shoot_laser from base class
         super().update(player)

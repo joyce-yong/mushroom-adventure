@@ -1,12 +1,12 @@
 import pygame
 import random
 
-class LevelTransition: # Renamed from Transition to LevelTransition as per your description
+class LevelTransition:
     def __init__(self, surface, outcome_color="green"):
         self.surface = surface
         self.screen_width, self.screen_height = surface.get_size()
         
-        # Define transition colors (red for failure, green for success)
+        # transition colors (red for failure, green for success)
         if outcome_color == "green":
             self.base_color = (0, 200, 0) # Green
         else: # "red"
@@ -17,12 +17,12 @@ class LevelTransition: # Renamed from Transition to LevelTransition as per your 
         self.is_running = True
         
         # Create a persistent overlay surface
-        self.overlay = pygame.Surface(surface.get_size(), pygame.SRCALPHA) # Use SRCALPHA for transparency
+        self.overlay = pygame.Surface(surface.get_size(), pygame.SRCALPHA)
         self.transition_color = (0,0,0,0) # Start fully transparent
         
         self.fade_speed = 4 # Control speed here (lower for longer, smoother)
 
-        # --- NEW: Parameters for streaky/warp effect ---
+        # Parameters for streaky/warp effect
         self.num_streaks = 100 # Number of streaks
         self.streaks = []
         self.streak_speed_factor = 1.5 # How much faster streaks move than alpha fade
@@ -103,18 +103,10 @@ class LevelTransition: # Renamed from Transition to LevelTransition as per your 
         
     def draw(self):
         if self.is_running or self.current_alpha > 0:
-            # Clear the overlay and redraw everything
             self.overlay.fill((0,0,0,0)) # Clear previous frame's drawings
             
-            # Draw the base color with current alpha
             base_overlay_surface = pygame.Surface(self.surface.get_size(), pygame.SRCALPHA)
-            
-            # This line handles the base color fading in/out
             base_overlay_surface.fill(self.base_color + (min(self.current_alpha, 200),)) 
             
             self.overlay.blit(base_overlay_surface, (0,0))
-
-            # ... (Streaks drawing logic follows)
-            
-            # Blit the entire overlay onto the main surface
             self.surface.blit(self.overlay, (0, 0))

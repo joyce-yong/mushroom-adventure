@@ -1,7 +1,6 @@
 import pygame
 import math
 import random
-# import config # Assuming config is correctly imported and available
 
 class CyberGrid:
     def __init__(self, screen_width, screen_height, spacing=60, base_color=(60, 0, 120), trail_color=(209, 0, 209)):
@@ -42,7 +41,6 @@ class CyberGrid:
 
         # Draw vertical lines (affected by the scan area)
         for x in range(0, self.screen_width, self.spacing):
-            # To apply the vertical trail effect, we must draw two segments for each line
             
             # Draw the "Scanned" portion (within the vertical trail zone)
             start_y = max(0, scan_trail_start)
@@ -61,7 +59,7 @@ class CyberGrid:
                 pygame.draw.line(surface, pulsing_base_color, (x, end_y), (x, self.screen_height), self.line_thickness)
 
 
-        # Draw horizontal lines (already implemented with trail effect)
+        # Draw horizontal lines
         for y in range(0, self.screen_height, self.spacing):
             # Check if line is within the trail zone
             if scan_trail_start <= y < scan_trail_end:
@@ -98,15 +96,15 @@ class CyberGrid:
     def draw(self, surface):
         """Draw all grid components."""
         
-        # 1. Calculate Pulsing Colors
+        # Calculate Pulsing Colors
         pulsing_base_color = self._get_pulsing_color(self.base_color, self.time_ms)
         pulsing_trail_color = self._get_pulsing_color(self.trail_color, self.time_ms)
         
-        # 2. Draw Main Grid with Trail Effect
+        # Draw Main Grid with Trail Effect
         self._draw_grid_lines(surface, pulsing_base_color, pulsing_trail_color)
 
-        # 3. Draw Data Noise
+        # Draw Data Noise
         self._draw_data_noise(surface)
 
-        # 4. Draw Scan Line (White line for strong contrast)
+        # Draw Scan Line
         self._draw_scan_line(surface, line_color=(242, 0, 137, 180)) 

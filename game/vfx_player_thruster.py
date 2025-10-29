@@ -12,7 +12,7 @@ class ThrusterParticle(pygame.sprite.Sprite):
         self.age = 0
         self.speed = random.uniform(1.0, 3.0) # Speed away from the ship
         
-        # Calculate angle for spread (e.g., between 80 and 100 degrees for rear exhaust)
+        # Calculate angle for spread
         angle = math.radians(random.uniform(80, 100))
         
         # Calculate velocity components
@@ -52,8 +52,7 @@ class ThrusterVFX:
         self.spawn_interval = 1 # milliseconds between spawns (for a consistent stream)
         
         # Define the thruster positions relative to the center of the player ship image
-        # You may need to adjust these coordinates based on your player sprite size
-        # These are (x_offset, y_offset, side_modifier)
+        # (x_offset, y_offset, side_modifier)
         # side_modifier: -1 for left-outward, 1 for right-outward
         self.thruster_data = [
             {'offset_x': -15, 'offset_y': 45, 'side': -1}, # Left thruster
@@ -86,7 +85,6 @@ class ThrusterVFX:
             thruster_x = base_x + offset_x
             thruster_y = base_y + offset_y
             
-            # --- ADJUSTED: More "badass" light red/orange colors ---
             color_choice = random.choice([
                 (255, 100, 0),    # Bright Orange-Red
                 (255, 60, 0),     # More fiery Red
@@ -95,7 +93,7 @@ class ThrusterVFX:
                 config.WHITE      # White (for core intensity)
             ]) 
             
-            # Create particle, now we need to modify its vel_x based on 'side_modifier'
+            # Create particle
             particle = ThrusterParticle(thruster_x, thruster_y, color_choice, speed_y_offset)
             
             # Override vel_x to ensure outward spread from each thruster

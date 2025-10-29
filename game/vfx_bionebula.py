@@ -1,4 +1,3 @@
-# vfx_bionebula.py
 import pygame
 import random
 import math
@@ -32,9 +31,6 @@ class BioNebula:
             self.spores.append([x, y, speed, size, color])
 
     def update(self, dt):
-        """
-        dt: seconds since last frame (float)
-        """
         # update timers and shifts
         self.haze_timer += dt
         self.haze_shift = math.sin(self.haze_timer * 0.4) * 80.0
@@ -74,7 +70,7 @@ class BioNebula:
         screen.fill((5, 5, 15))
         overscale = 1.02
 
-        # --- 1. gradient background (base surface) ---
+        # gradient background (base surface)
         gradient = pygame.Surface((self.width, self.height))
         for y in range(self.height):
             # gentle banded variation using haze_shift
@@ -96,7 +92,7 @@ class BioNebula:
         blit_y = -(scaled_h - self.height) // 2 + int(self.pan_y)
         screen.blit(scaled, (blit_x, blit_y))
 
-        # --- 2. soft nebula haze layers (alpha) ---
+        # soft nebula haze layers (alpha)
         # Draw a few translucent blobs that slowly change size/position
         for i in range(3):
             haze_surf = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
@@ -111,7 +107,7 @@ class BioNebula:
             pygame.draw.circle(haze_surf, layer_color, (cx, cy), abs(radius))
             screen.blit(haze_surf, (0, 0))
 
-        # --- 3. drifting spores (bio-lights) ---
+        # drifting spores (bio-lights)
         t = pygame.time.get_ticks()
         for s in self.spores:
             x, y, _, size, color = s
