@@ -13,7 +13,7 @@ class SporeParticle:
         self.size = size
         self.velocity_y = velocity_y 
         self.alpha_mod = alpha_mod
-        self.alpha = random.randint(50, 200)
+        self.alpha = random.randint(80, 250)
         self.time_offset = random.uniform(0, 2 * math.pi)
         self.original_image = image
         self.image = pygame.transform.scale(image, (size, size)).convert_alpha()
@@ -52,8 +52,8 @@ class FungalSporesVFX:
         
         min_speed = 0.3
         max_speed = 1.0
-        self.size_min = 10
-        self.size_max = 20
+        self.size_min = 50
+        self.size_max = 100
         self.alpha_fade = 0.5
         
         if direction == "rising":

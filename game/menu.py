@@ -514,7 +514,7 @@ def result_screen():
             config.screen_width, 
             config.screen_height, 
             direction = "falling",
-            num_spores = 80
+            num_spores = 50
         )
         # initialize haze vfx
         haze_vfx = GradientHaze( 
