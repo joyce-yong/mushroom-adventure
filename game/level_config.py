@@ -17,11 +17,11 @@ LEVELS = {
         
         # enemy types that can spawn
         'enemy_types': ['enemy1', 'enemy2', 'enemy3'],
-        'enemy_weights': [3, 3, 3],
+        'enemy_weights': [4, 4, 4],
         
         # spawn rates
         'enemy_spawn_interval': 13000,  # 13 seconds
-        'asteroid_spawn_rate': 0.002,   # Lower rate
+        'asteroid_spawn_rate': 0.003,   # Lower rate
         
         # special objects
         'blackholes_enabled': False,

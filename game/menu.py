@@ -86,7 +86,7 @@ def level_select():
         galaxy.update(dt, time_ms)
         galaxy.draw(config.game_window, time_ms)
 
-        title_surface = config.title_font.render(title_text, True, config.WHITE)
+        title_surface = config.title_font.render(title_text, True, config.CAYAN)
         title_rect = title_surface.get_rect(center=(config.screen_width // 2, title_y))
         config.game_window.blit(title_surface, title_rect)
 
